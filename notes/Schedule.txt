@@ -1,0 +1,9 @@
+Week 0 - Ders - Initial proposal, set up repo and initial skeleton.
+Week 1 - Ders - Review the paper and related work. Generate dataset. Set up coding environment. Implement baseline B-Tree for comparison. UML.
+Week 2 - Shiana & Nav - Build first learned index with linear regression. Add local search correction. Run initial tests vs. B-Tree.
+Week 3 - Nav & Johnson - Implement Recursive Model Index (two-stage). Try linear + shallow NN at the top stage. Collect early benchmarks. 
+Week 4 - Sergio & Renee - Add hybrid approach (B-Trees for hard cases). Stress test on irregular data. Document trade-offs. 
+Week 5 - Renee & Ders & Sergio (Optional) Extend to learned hash indexes. If not, refine RMI + hybrid experiments. 
+Week 6 - Everyone - Wrap up experiments. Write comparisons (learned vs. B-Tree vs. hash) Prepare graphs and tables. 
+Week 7 - 
+Week 8 - Shiana, Johnson - Finalize report, powerpoint, and code. Proofread and polish. Submit by November 28
