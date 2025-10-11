@@ -1,3 +1,31 @@
+"""
+===============================================================================
+DATA LOADER MODULE
+===============================================================================
+This module generates synthetic datasets for testing search and indexing
+algorithms (B-Tree, Linear Regression Index, etc.).
+
+The DatasetGenerator class provides functions to create datasets ranging from
+1 to 1,000,000 keys in different distributions:
+    • Sequential — ordered numbers (best-case data)
+    • Uniform — random spread across a range
+    • Mixed — clustered/random blend to simulate real-world skew
+
+These datasets are used as input for performance benchmarking, testing how
+well various index structures handle different data patterns.
+
+Usage:
+    from src.utils.data_loader import DatasetGenerator
+
+    keys = DatasetGenerator.generate_uniform(10000)
+    print(keys[:10])  # Preview data
+
+Next Steps:
+    - Add CSV save/load utilities if you want to persist datasets.
+    - Extend with skewed or Zipf distributions for more complex tests.
+===============================================================================
+"""
+
 import numpy as np
 
 class DatasetGenerator:
@@ -25,7 +53,7 @@ class DatasetGenerator:
 
 
 # -----------------------------------------------------------------------------
-# Quick-run tester (works directly inside VS Code)
+# Quick-run tester delete later when not needed.
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     print("🔍 Testing DatasetGenerator...\n")
