@@ -31,7 +31,7 @@ Next Steps:
 import time
 import numpy as np
 from src.indexes.btree import BTree
-
+from src.indexes.learned_index import LearnedIndex
 
 class Benchmark:
     """Benchmark tool for B-Tree performance."""
@@ -66,6 +66,10 @@ class Benchmark:
         np.random.shuffle(queries)
 
         results = {}
+
+        # ------------------------------------------------------------
+        # B-TREE BENCHMARKS
+        # ------------------------------------------------------------
         for order in [32, 64, 128, 256]:
             tree = BTree(order=order)
             build = Benchmark.measure_build_time(tree, keys)
@@ -75,8 +79,29 @@ class Benchmark:
             print(f"Order {order:<3} | Build: {build:>8.2f} ms | "
                   f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB")
 
-            results[order] = {"build_ms": build,
-                              "lookup_ns": lookup,
-                              "memory_mb": mem}
+            results[f"BTree_{order}"] = {
+                    "build_ms": build,
+                    "lookup_ns": lookup,
+                    "memory_mb": mem
+            }
+
+        # ------------------------------------------------------------
+        # LEARNED INDEX BENCHMARK
+        # ------------------------------------------------------------
+        print("\n-- Learned Index (Linear Regression) --")
+
+        lm = LinearModelIndex()
+        build = Benchmark.measure_build_time(lm, keys)
+        lookup = Benchmark.measure_lookup_time(lm, queries)
+        mem = lm.get_memory_usage() / (1024 * 1024)
+
+        print(f"LinearModel | Build: {build:>8.2f} ms | "
+              f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB")
+
+        results["LinearModel"] = {
+            "build_ms": build,
+            "lookup_ns": lookup,
+            "memory_mb": mem
+        }
 
         return results
