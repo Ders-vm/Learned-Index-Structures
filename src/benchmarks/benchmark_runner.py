@@ -90,7 +90,7 @@ class Benchmark:
         # ------------------------------------------------------------
         print("\n-- Learned Index (Linear Regression) --")
 
-        lm = LinearModelIndex()
+        lm = LearnedIndex()
         build = Benchmark.measure_build_time(lm, keys)
         lookup = Benchmark.measure_lookup_time(lm, queries)
         mem = lm.get_memory_usage() / (1024 * 1024)

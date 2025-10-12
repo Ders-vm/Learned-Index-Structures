@@ -7,11 +7,11 @@ model. It predicts the position of each key in a sorted array, then performs
 a local binary search around that prediction for correction.
 
 Usage:
-    from src.indexes.linear_model_index import LinearModelIndex
+    from src.indexes.linear_model_index import LearnedIndex
     from src.utils.data_loader import DatasetGenerator
 
     keys = DatasetGenerator.generate_uniform(10000)
-    index = LinearModelIndex()
+    index = LearnedIndex()
     index.build_from_sorted_array(keys)
     print(index.search(keys[100]))
 ===============================================================================
@@ -21,7 +21,7 @@ import numpy as np
 import bisect
 
 
-class LinearModelIndex:
+class LearnedIndex:
     """Simple learned index using linear regression and local search correction."""
 
     def __init__(self):
