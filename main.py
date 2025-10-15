@@ -5,13 +5,15 @@ from src.benchmarks.benchmark_runner import Benchmark
 def main():
     print("🧠 Phase 1 – B-Tree Benchmark\n")
 
-    sizes = [1_000, 10_000, 100_000]   # dataset sizes to test
+    sizes = [10_000, 100_000, 1_000_000]   # dataset sizes to test
     for size in sizes:
         print(f"\n{'#'*70}\nTesting {size:,} keys\n{'#'*70}")
 
+        # Generate datasets, sequential and uniformly distributed (random)
         datasets = {
             "Sequential": DatasetGenerator.generate_sequential(size),
-            "Uniform": DatasetGenerator.generate_uniform(size)
+            "Uniform": DatasetGenerator.generate_uniform(size),
+            "Mixed": DatasetGenerator.generate_mixed(size)
         }
 
         for name, keys in datasets.items():
