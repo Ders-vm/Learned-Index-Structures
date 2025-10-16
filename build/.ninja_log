@@ -1,0 +1,4 @@
+# ninja log v7
+3	688	7822785729676569	CMakeFiles/btree_cpp.dir/src/indexes/cpp/btree_cpp.cpp.obj	a14e3ac7ae23ad2e
+8	5048	7822785729718526	CMakeFiles/btree_cpp.dir/src/indexes/cpp/bindings.cpp.obj	b32f437ed44f5213
+5051	5297	7822785780120871	C:/Coding/Learned-Index-Structures/src/indexes/cpp/btree_cpp.cp313-win_amd64.pyd	251f5b88148a865d
