@@ -83,6 +83,102 @@ build C$:/Coding/Learned-Index-Structures/src/indexes/cpp/btree_cpp.cp313-win_am
   TARGET_IMPLIB = libbtree_cpp.dll.a
   TARGET_PDB = C:\Coding\Learned-Index-Structures\src\indexes\cpp\btree_cpp.pdb
 
+# =============================================================================
+# Object build statements for MODULE_LIBRARY target linear_model_cpp
+
+
+#############################################
+# Order-only phony target for linear_model_cpp
+
+build cmake_object_order_depends_target_linear_model_cpp: phony || .
+
+build CMakeFiles/linear_model_cpp.dir/src/indexes/cpp/linear_model_cpp.cpp.obj: CXX_COMPILER__linear_model_cpp_unscanned_ C$:/Coding/Learned-Index-Structures/src/indexes/cpp/linear_model_cpp.cpp || cmake_object_order_depends_target_linear_model_cpp
+  DEFINES = -Dlinear_model_cpp_EXPORTS
+  DEP_FILE = CMakeFiles\linear_model_cpp.dir\src\indexes\cpp\linear_model_cpp.cpp.obj.d
+  FLAGS = -std=gnu++17
+  INCLUDES = -IC:/Users/Anders.LEVIATHAN/AppData/Local/Programs/Python/Python313/Include -IC:/Coding/Learned-Index-Structures/.venv/Lib/site-packages/pybind11/include -IC:/Coding/Learned-Index-Structures/src/indexes/cpp/include
+  OBJECT_DIR = CMakeFiles\linear_model_cpp.dir
+  OBJECT_FILE_DIR = CMakeFiles\linear_model_cpp.dir\src\indexes\cpp
+  TARGET_COMPILE_PDB = CMakeFiles\linear_model_cpp.dir\
+  TARGET_PDB = C:\Coding\Learned-Index-Structures\src\indexes\cpp\linear_model_cpp.pdb
+
+build CMakeFiles/linear_model_cpp.dir/src/indexes/cpp/bindings_linear.cpp.obj: CXX_COMPILER__linear_model_cpp_unscanned_ C$:/Coding/Learned-Index-Structures/src/indexes/cpp/bindings_linear.cpp || cmake_object_order_depends_target_linear_model_cpp
+  DEFINES = -Dlinear_model_cpp_EXPORTS
+  DEP_FILE = CMakeFiles\linear_model_cpp.dir\src\indexes\cpp\bindings_linear.cpp.obj.d
+  FLAGS = -std=gnu++17
+  INCLUDES = -IC:/Users/Anders.LEVIATHAN/AppData/Local/Programs/Python/Python313/Include -IC:/Coding/Learned-Index-Structures/.venv/Lib/site-packages/pybind11/include -IC:/Coding/Learned-Index-Structures/src/indexes/cpp/include
+  OBJECT_DIR = CMakeFiles\linear_model_cpp.dir
+  OBJECT_FILE_DIR = CMakeFiles\linear_model_cpp.dir\src\indexes\cpp
+  TARGET_COMPILE_PDB = CMakeFiles\linear_model_cpp.dir\
+  TARGET_PDB = C:\Coding\Learned-Index-Structures\src\indexes\cpp\linear_model_cpp.pdb
+
+
+# =============================================================================
+# Link build statements for MODULE_LIBRARY target linear_model_cpp
+
+
+#############################################
+# Link the shared module C:\Coding\Learned-Index-Structures\src\indexes\cpp\linear_model_cpp.cp313-win_amd64.pyd
+
+build C$:/Coding/Learned-Index-Structures/src/indexes/cpp/linear_model_cpp.cp313-win_amd64.pyd: CXX_MODULE_LIBRARY_LINKER__linear_model_cpp_ CMakeFiles/linear_model_cpp.dir/src/indexes/cpp/linear_model_cpp.cpp.obj CMakeFiles/linear_model_cpp.dir/src/indexes/cpp/bindings_linear.cpp.obj | C$:/Users/Anders.LEVIATHAN/AppData/Local/Programs/Python/Python313/libs/python313.lib
+  LINK_FLAGS = -shared
+  LINK_LIBRARIES = C:/Users/Anders.LEVIATHAN/AppData/Local/Programs/Python/Python313/libs/python313.lib  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\linear_model_cpp.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_COMPILE_PDB = CMakeFiles\linear_model_cpp.dir\
+  TARGET_FILE = C:\Coding\Learned-Index-Structures\src\indexes\cpp\linear_model_cpp.cp313-win_amd64.pyd
+  TARGET_IMPLIB = liblinear_model_cpp.dll.a
+  TARGET_PDB = C:\Coding\Learned-Index-Structures\src\indexes\cpp\linear_model_cpp.pdb
+
+# =============================================================================
+# Object build statements for MODULE_LIBRARY target rmi_cpp
+
+
+#############################################
+# Order-only phony target for rmi_cpp
+
+build cmake_object_order_depends_target_rmi_cpp: phony || .
+
+build CMakeFiles/rmi_cpp.dir/src/indexes/cpp/rmi_cpp.cpp.obj: CXX_COMPILER__rmi_cpp_unscanned_ C$:/Coding/Learned-Index-Structures/src/indexes/cpp/rmi_cpp.cpp || cmake_object_order_depends_target_rmi_cpp
+  DEFINES = -Drmi_cpp_EXPORTS
+  DEP_FILE = CMakeFiles\rmi_cpp.dir\src\indexes\cpp\rmi_cpp.cpp.obj.d
+  FLAGS = -std=gnu++17
+  INCLUDES = -IC:/Users/Anders.LEVIATHAN/AppData/Local/Programs/Python/Python313/Include -IC:/Coding/Learned-Index-Structures/.venv/Lib/site-packages/pybind11/include -IC:/Coding/Learned-Index-Structures/src/indexes/cpp/include
+  OBJECT_DIR = CMakeFiles\rmi_cpp.dir
+  OBJECT_FILE_DIR = CMakeFiles\rmi_cpp.dir\src\indexes\cpp
+  TARGET_COMPILE_PDB = CMakeFiles\rmi_cpp.dir\
+  TARGET_PDB = C:\Coding\Learned-Index-Structures\src\indexes\cpp\rmi_cpp.pdb
+
+build CMakeFiles/rmi_cpp.dir/src/indexes/cpp/bindings_rmi.cpp.obj: CXX_COMPILER__rmi_cpp_unscanned_ C$:/Coding/Learned-Index-Structures/src/indexes/cpp/bindings_rmi.cpp || cmake_object_order_depends_target_rmi_cpp
+  DEFINES = -Drmi_cpp_EXPORTS
+  DEP_FILE = CMakeFiles\rmi_cpp.dir\src\indexes\cpp\bindings_rmi.cpp.obj.d
+  FLAGS = -std=gnu++17
+  INCLUDES = -IC:/Users/Anders.LEVIATHAN/AppData/Local/Programs/Python/Python313/Include -IC:/Coding/Learned-Index-Structures/.venv/Lib/site-packages/pybind11/include -IC:/Coding/Learned-Index-Structures/src/indexes/cpp/include
+  OBJECT_DIR = CMakeFiles\rmi_cpp.dir
+  OBJECT_FILE_DIR = CMakeFiles\rmi_cpp.dir\src\indexes\cpp
+  TARGET_COMPILE_PDB = CMakeFiles\rmi_cpp.dir\
+  TARGET_PDB = C:\Coding\Learned-Index-Structures\src\indexes\cpp\rmi_cpp.pdb
+
+
+# =============================================================================
+# Link build statements for MODULE_LIBRARY target rmi_cpp
+
+
+#############################################
+# Link the shared module C:\Coding\Learned-Index-Structures\src\indexes\cpp\rmi_cpp.cp313-win_amd64.pyd
+
+build C$:/Coding/Learned-Index-Structures/src/indexes/cpp/rmi_cpp.cp313-win_amd64.pyd: CXX_MODULE_LIBRARY_LINKER__rmi_cpp_ CMakeFiles/rmi_cpp.dir/src/indexes/cpp/rmi_cpp.cpp.obj CMakeFiles/rmi_cpp.dir/src/indexes/cpp/bindings_rmi.cpp.obj | C$:/Users/Anders.LEVIATHAN/AppData/Local/Programs/Python/Python313/libs/python313.lib
+  LINK_FLAGS = -shared
+  LINK_LIBRARIES = C:/Users/Anders.LEVIATHAN/AppData/Local/Programs/Python/Python313/libs/python313.lib  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
+  OBJECT_DIR = CMakeFiles\rmi_cpp.dir
+  POST_BUILD = cd .
+  PRE_LINK = cd .
+  TARGET_COMPILE_PDB = CMakeFiles\rmi_cpp.dir\
+  TARGET_FILE = C:\Coding\Learned-Index-Structures\src\indexes\cpp\rmi_cpp.cp313-win_amd64.pyd
+  TARGET_IMPLIB = librmi_cpp.dll.a
+  TARGET_PDB = C:\Coding\Learned-Index-Structures\src\indexes\cpp\rmi_cpp.pdb
+
 
 #############################################
 # Utility command for edit_cache
@@ -113,6 +209,14 @@ build btree_cpp: phony C$:/Coding/Learned-Index-Structures/src/indexes/cpp/btree
 
 build btree_cpp.cp313-win_amd64.pyd: phony C$:/Coding/Learned-Index-Structures/src/indexes/cpp/btree_cpp.cp313-win_amd64.pyd
 
+build linear_model_cpp: phony C$:/Coding/Learned-Index-Structures/src/indexes/cpp/linear_model_cpp.cp313-win_amd64.pyd
+
+build linear_model_cpp.cp313-win_amd64.pyd: phony C$:/Coding/Learned-Index-Structures/src/indexes/cpp/linear_model_cpp.cp313-win_amd64.pyd
+
+build rmi_cpp: phony C$:/Coding/Learned-Index-Structures/src/indexes/cpp/rmi_cpp.cp313-win_amd64.pyd
+
+build rmi_cpp.cp313-win_amd64.pyd: phony C$:/Coding/Learned-Index-Structures/src/indexes/cpp/rmi_cpp.cp313-win_amd64.pyd
+
 # =============================================================================
 # Folder targets.
 
@@ -121,7 +225,7 @@ build btree_cpp.cp313-win_amd64.pyd: phony C$:/Coding/Learned-Index-Structures/s
 #############################################
 # Folder: C:/Coding/Learned-Index-Structures/build
 
-build all: phony C$:/Coding/Learned-Index-Structures/src/indexes/cpp/btree_cpp.cp313-win_amd64.pyd
+build all: phony C$:/Coding/Learned-Index-Structures/src/indexes/cpp/btree_cpp.cp313-win_amd64.pyd C$:/Coding/Learned-Index-Structures/src/indexes/cpp/linear_model_cpp.cp313-win_amd64.pyd C$:/Coding/Learned-Index-Structures/src/indexes/cpp/rmi_cpp.cp313-win_amd64.pyd
 
 # =============================================================================
 # Built-in targets

@@ -1,4 +1,10 @@
 # ninja log v7
-3	688	7822785729676569	CMakeFiles/btree_cpp.dir/src/indexes/cpp/btree_cpp.cpp.obj	a14e3ac7ae23ad2e
-8	5048	7822785729718526	CMakeFiles/btree_cpp.dir/src/indexes/cpp/bindings.cpp.obj	b32f437ed44f5213
-5051	5297	7822785780120871	C:/Coding/Learned-Index-Structures/src/indexes/cpp/btree_cpp.cp313-win_amd64.pyd	251f5b88148a865d
+7	710	7823312420274006	CMakeFiles/linear_model_cpp.dir/src/indexes/cpp/linear_model_cpp.cpp.obj	38554bee12eb1033
+13	773	7823312420314081	CMakeFiles/rmi_cpp.dir/src/indexes/cpp/rmi_cpp.cpp.obj	4872bd1b8578afd8
+2	1184	7823312420224002	CMakeFiles/btree_cpp.dir/src/indexes/cpp/btree_cpp.cpp.obj	a14e3ac7ae23ad2e
+10	5365	7823312420294003	CMakeFiles/linear_model_cpp.dir/src/indexes/cpp/bindings_linear.cpp.obj	c161e2f258788d6d
+18	5421	7823312420390586	CMakeFiles/rmi_cpp.dir/src/indexes/cpp/bindings_rmi.cpp.obj	c83afde4eaa1e393
+5	5432	7823312420244001	CMakeFiles/btree_cpp.dir/src/indexes/cpp/bindings.cpp.obj	b32f437ed44f5213
+5367	5580	7823312473873052	C:/Coding/Learned-Index-Structures/src/indexes/cpp/linear_model_cpp.cp313-win_amd64.pyd	468fa1684fc71f7a
+5422	5582	7823312474386070	C:/Coding/Learned-Index-Structures/src/indexes/cpp/rmi_cpp.cp313-win_amd64.pyd	ca64cbf0dc361a6a
+5433	5587	7823312474386070	C:/Coding/Learned-Index-Structures/src/indexes/cpp/btree_cpp.cp313-win_amd64.pyd	251f5b88148a865d

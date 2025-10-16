@@ -30,7 +30,9 @@ message(STATUS "Found pybind11: ${PYBIND11_INCLUDE_DIR}")
 message(STATUS "Python includes: ${Python3_INCLUDE_DIRS}")
 message(STATUS "Module extension: ${PYTHON_MODULE_EXTENSION}")
 
-# Create the module
+# ==============================================================================
+# B-Tree Module
+# ==============================================================================
 add_library(btree_cpp MODULE
     src/indexes/cpp/btree_cpp.cpp
     src/indexes/cpp/bindings.cpp
@@ -52,3 +54,55 @@ set_target_properties(btree_cpp PROPERTIES
     OUTPUT_NAME "btree_cpp"
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/src/indexes/cpp"
 )
+
+# ==============================================================================
+# Linear Model Module
+# ==============================================================================
+add_library(linear_model_cpp MODULE
+    src/indexes/cpp/linear_model_cpp.cpp
+    src/indexes/cpp/bindings_linear.cpp
+)
+
+target_include_directories(linear_model_cpp PRIVATE
+    ${Python3_INCLUDE_DIRS}
+    ${PYBIND11_INCLUDE_DIR}
+    ${PROJECT_SOURCE_DIR}/src/indexes/cpp/include
+)
+
+target_link_libraries(linear_model_cpp PRIVATE
+    ${Python3_LIBRARIES}
+)
+
+set_target_properties(linear_model_cpp PROPERTIES
+    PREFIX ""
+    SUFFIX "${PYTHON_MODULE_EXTENSION}"
+    OUTPUT_NAME "linear_model_cpp"
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/src/indexes/cpp"
+)
+
+# ==============================================================================
+# RMI Module
+# ==============================================================================
+add_library(rmi_cpp MODULE
+    src/indexes/cpp/rmi_cpp.cpp
+    src/indexes/cpp/bindings_rmi.cpp
+)
+
+target_include_directories(rmi_cpp PRIVATE
+    ${Python3_INCLUDE_DIRS}
+    ${PYBIND11_INCLUDE_DIR}
+    ${PROJECT_SOURCE_DIR}/src/indexes/cpp/include
+)
+
+target_link_libraries(rmi_cpp PRIVATE
+    ${Python3_LIBRARIES}
+)
+
+set_target_properties(rmi_cpp PROPERTIES
+    PREFIX ""
+    SUFFIX "${PYTHON_MODULE_EXTENSION}"
+    OUTPUT_NAME "rmi_cpp"
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/src/indexes/cpp"
+)
+
+message(STATUS "All modules will be built to: ${PROJECT_SOURCE_DIR}/src/indexes/cpp")
