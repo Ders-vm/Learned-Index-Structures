@@ -92,7 +92,7 @@ class Benchmark:
         # ------------------------------------------------------------    
         print("\n-- Learned Index (Linear Regression) --")
 
-        for errorWindow in [128, 512, 100000]:
+        for errorWindow in [128, 512, 1024, 100000]:
             lm = LearnedIndex()
             lm.window = errorWindow
             build = Benchmark.measure_build_time(lm, keys)
@@ -100,13 +100,15 @@ class Benchmark:
             total_queries = lm.total_queries
             correct_predictions = lm.correct_predictions
             fallbacks = lm.fallbacks
+            false_negatives = lm.false_negatives
             not_found = lm.not_found
             mem = lm.get_memory_usage() / (1024 * 1024)
 
             print(f"Window {errorWindow:<4} | Build: {build:>8.2f} ms | "
                   f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB | "
-                  f"Correct: {correct_predictions}/{total_queries} | "
-                  f"Fallbacks: {fallbacks} | Not Found: {not_found}")
+                  f"Correct: {correct_predictions}/500 | "                # only half of queries are existing keys
+                  f"Fallbacks: {fallbacks} | Not Found: {not_found} | "   # shows how many fallbacks and how many were not found
+                  f"False Negatives: {false_negatives}")                  # how many times a key was present but not predicted correctly
 
             results["LinearModel"] = {
                 "error_window": errorWindow,

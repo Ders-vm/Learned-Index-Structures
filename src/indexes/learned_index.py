@@ -31,6 +31,7 @@ class LearnedIndex:
         self.keys = None  # the sorted keys
         self.correct_predictions = 0  # tracking correct predictions
         self.fallbacks = 0  # tracking fallbacks to full search
+        self.false_negatives = 0  # tracking false negatives / wrong predictions
         self.not_found = 0  # tracking not found cases
         self.total_queries = 0  # total queries made
 
@@ -89,7 +90,15 @@ class LearnedIndex:
         if found:
             self.correct_predictions += 1 # predicted position was correct
         elif not found:
-            self.not_found += 1 # key was not found (no fallbacks so could be false negative)
+            # fall back to full search
+            self.fallbacks += 1
+            # Perform full search as fallback
+            full_idx = bisect.bisect_left(self.keys, key)
+            if full_idx < n and self.keys[full_idx] == key:
+                found = True
+                self.false_negatives += 1
+            else:
+                self.not_found += 1
         return found
 
     # ----------------------------------------------------------------------
