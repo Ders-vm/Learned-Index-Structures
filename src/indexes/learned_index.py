@@ -52,7 +52,7 @@ class LearnedIndex:
     # ----------------------------------------------------------------------
     # Search
     # ----------------------------------------------------------------------
-    def search(self, key: float, window: int = 100000) -> bool:
+    def search(self, key: float, window: int = 64) -> bool:
         """Predict approximate position, then correct locally.
         Args:
             key: The key to search for.
@@ -185,7 +185,7 @@ if __name__ == "__main__":
         print("\n-- Mini-Benchmark (LearnedIndex) --")
         print(f"Build: {build_ms:8.2f} ms | Lookup mean: {avg_ns:8.2f} ns | Mem: {mem_mb:6.3f} MB")
         print(f"Hits: {hits}  Misses: {misses}  |  Hits(existing/random): {hits_existing}/{hits_randoms}  "
-              f"Misses(existing/random): {misses_existing}/{misses_randoms}")
+              f"Misses(existing/random): {misses_existing}/{misses_randoms} \n\n")
         # -------------------------------------------------------------
 
         # Print model parameters and error window
