@@ -27,7 +27,11 @@ class LearnedIndex:
     def __init__(self):
         self.a = 0.0  # slope
         self.b = 0.0  # intercept
-        self.keys = None
+        self.keys = None  # the sorted keys
+        self.correct_predictions = 0  # tracking correct predictions
+        self.fallbacks = 0  # tracking fallbacks to full search
+        self.not_found = 0  # tracking not found cases
+        self.total_queries = 0  # total queries made
 
     # ----------------------------------------------------------------------
     # Build
@@ -60,6 +64,7 @@ class LearnedIndex:
             return False
 
         n = len(self.keys)
+        self.total_queries += 1
 
         # Predict approximate index
         pred = int(self.a * key + self.b)
@@ -73,7 +78,17 @@ class LearnedIndex:
 
         # Local binary search correction
         idx = bisect.bisect_left(self.keys[left:right], key)
+
+        # try this TODO
+        #idx = np.searchsorted(self.keys[left:right], key, side='left')
+
         found = (idx + left < n) and (self.keys[idx + left] == key)
+
+        #for debug tracking
+        if found and (idx + left) == pred:
+            self.correct_predictions += 1 # predicted position was correct
+        elif not found:
+            self.not_found += 1 # key was not found (no fallbacks so could be false negative)
         return found
 
     # ----------------------------------------------------------------------
@@ -82,3 +97,54 @@ class LearnedIndex:
     def get_memory_usage(self) -> int:
         """Approximate memory usage in bytes."""
         return len(self.keys) * 8 + 16 + 16  # keys + a/b params + overhead
+    
+
+# ----------------------------------------------------------------------
+# Quick sanity check / debug test
+# ----------------------------------------------------------------------
+if __name__ == "__main__":
+    import numpy as np
+    from utils.data_loader import DatasetGenerator
+
+    print("Sanity Check: LearnedIndex\n")
+
+    # Test different dataset types
+    for name, gen_func in [
+        ("Sequential", DatasetGenerator.generate_sequential),
+        ("Uniform", DatasetGenerator.generate_uniform),
+        ("Mixed", DatasetGenerator.generate_mixed),
+    ]:
+        print(f"\n{'='*60}")
+        print(f"Dataset: {name}")
+        print(f"{'='*60}")
+
+        # Generate and build
+        keys = gen_func(1000)
+        index = LearnedIndex()
+        index.build_from_sorted_array(keys)
+
+        # Print model parameters and error window
+        print(f"Slope (a): {index.a:.6f}")
+        print(f"Intercept (b): {index.b:.6f}")
+        print(f"Error window: [{index.min_error}, {index.max_error}]")
+        print(f"Memory usage: {index.get_memory_usage() / 1024:.2f} KB")
+
+        # Test a few existing keys
+        test_keys = [
+            keys[0],                      # first
+            keys[len(keys)//2],           # middle
+            keys[-1],                     # last
+            float(keys[len(keys)//2] + 1) # nearby key (probably not in dataset)
+        ]
+
+        for k in test_keys:
+            found, pos = index.search(k)
+            print(f"Key={k:.2f:>12} -> Found={found}, Pos={pos}")
+
+        # Test a random non-existing key
+        q = float(np.random.uniform(keys.min(), keys.max()))
+        found, pos = index.search(q)
+        print(f"\nRandom query: {q:.2f} -> Found={found}, Pos={pos}")
+    
+    print("\nLearnedIndex sanity check complete.\n")
+   
