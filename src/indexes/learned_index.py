@@ -7,7 +7,7 @@ model. It predicts the position of each key in a sorted array, then performs
 a local binary search around that prediction for correction.
 
 Usage:
-    from src.indexes.linear_model_index import LearnedIndex
+    from src.indexes.linear_index import LearnedIndex
     from src.utils.data_loader import DatasetGenerator
 
     keys = DatasetGenerator.generate_uniform(10000)
@@ -48,10 +48,16 @@ class LearnedIndex:
     # ----------------------------------------------------------------------
     # Search
     # ----------------------------------------------------------------------
-    def search(self, key: float, window: int = 64):
-        """Predict approximate position, then correct locally."""
+    def search(self, key: float, window: int = 64) -> bool:
+        """Predict approximate position, then correct locally.
+        Args:
+            key: The key to search for.
+            window: Search window size around predicted position.
+        Returns:
+            bool indicating whether the key was found.
+        """
         if self.keys is None or len(self.keys) == 0:
-            return False, 0
+            return False
 
         n = len(self.keys)
 
@@ -68,7 +74,7 @@ class LearnedIndex:
         # Local binary search correction
         idx = bisect.bisect_left(self.keys[left:right], key)
         found = (idx + left < n) and (self.keys[idx + left] == key)
-        return found, 1
+        return found
 
     # ----------------------------------------------------------------------
     # Memory usage estimate

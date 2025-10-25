@@ -38,14 +38,14 @@ class Benchmark:
     """Benchmark tool for B-Tree performance."""
 
     @staticmethod
-    def measure_build_time(index: BTree, keys: np.ndarray) -> float:
+    def measure_build_time(index, keys: np.ndarray) -> float:
         start = time.perf_counter()
         index.build_from_sorted_array(keys)
         end = time.perf_counter()
         return (end - start) * 1000  # ms
 
     @staticmethod
-    def measure_lookup_time(index: BTree, queries: np.ndarray) -> float:
+    def measure_lookup_time(index, queries: np.ndarray) -> float:
         times = []
         for q in queries:
             start = time.perf_counter()

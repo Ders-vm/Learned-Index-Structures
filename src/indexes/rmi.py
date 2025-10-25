@@ -143,7 +143,7 @@ class RecursiveModelIndex:
     # ------------------------------------------------------------------
     # Search
     # ------------------------------------------------------------------
-    def search(self, key: float, safety: int = 8) -> Tuple[bool, int]:
+    def search(self, key: float, safety: int = 8) -> bool:
         """Predict the key's position using the two-stage model and correct locally.
 
         Args:
@@ -151,12 +151,12 @@ class RecursiveModelIndex:
             safety: additional window (indices) added to the learned error bound
                     per segment to compensate for distribution drift.
         Returns:
-            (found: bool, comparisons: int) — comparisons is a placeholder, this implementation returns (found, 1).
+            bool indicating whether the key was found.
         """
         if self.keys is None or self.n == 0:
-            return False, 1
+            return False
         if self.n == 1:
-            return bool(key == self.keys[0]), 1
+            return bool(key == self.keys[0])
 
         # Stage 0: predict global position and map to segment id
         pos0 = self.a0 * key + self.b0
@@ -183,7 +183,7 @@ class RecursiveModelIndex:
         view = self.keys[left:right]
         idx = bisect.bisect_left(view, key)
         found = (idx + left < self.n) and (self.keys[idx + left] == key)
-        return found, 1
+        return found
 
     # ------------------------------------------------------------------
     # Memory usage estimate
