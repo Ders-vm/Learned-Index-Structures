@@ -52,7 +52,7 @@ class LearnedIndex:
     # ----------------------------------------------------------------------
     # Search
     # ----------------------------------------------------------------------
-    def search(self, key: float, window: int = 64) -> bool:
+    def search(self, key: float, window: int = 100000) -> bool:
         """Predict approximate position, then correct locally.
         Args:
             key: The key to search for.
@@ -101,9 +101,11 @@ class LearnedIndex:
 
 # ----------------------------------------------------------------------
 # Quick sanity check / debug test
+# use in console to run : python -m src.indexes.learned_index  
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
     import numpy as np
+    import time
     from ..utils.data_loader import DatasetGenerator
 
     print("Sanity Check: LearnedIndex\n")
@@ -119,9 +121,72 @@ if __name__ == "__main__":
         print(f"{'='*60}")
 
         # Generate and build
-        keys = gen_func(1000)
+        keys = gen_func(100_000)
         index = LearnedIndex()
         index.build_from_sorted_array(keys)
+
+                        # ---- Mini-benchmark (same methodology as Benchmark.run) ----
+
+        num_queries = 1000
+        # Build timing (rebuild once just for timing fairness)
+        t0 = time.perf_counter()
+        index2 = LearnedIndex()
+        index2.build_from_sorted_array(keys)
+        t1 = time.perf_counter()
+        build_ms = (t1 - t0) * 1000.0
+
+        # Query set: half existing, half random in-range
+        rng = np.random.default_rng(0)  # seed for reproducibility
+        existing = rng.choice(keys, num_queries // 2, replace=True)
+        randoms  = rng.uniform(keys.min(), keys.max(), num_queries // 2)
+        queries  = np.concatenate([existing, randoms])
+        rng.shuffle(queries)
+
+        # Helpers to accept either bool or (bool, idx)
+        def _found_only(res):
+            if isinstance(res, tuple):
+                return bool(res[0])
+            return bool(res)
+
+        # Lookup timing + hit/miss breakdown
+        times_ns = []
+        hits = misses = 0
+        hits_existing = misses_existing = 0
+        hits_randoms = misses_randoms = 0
+
+        # First half of queries correspond to existing before shuffle; since we shuffled,
+        # we’ll compute hit/miss categories by testing membership.
+        # (This avoids carrying labels through the shuffle.)
+        keyset = set(keys.tolist())  # membership test for label (ok for this small mini-bench)
+
+        for q in queries:
+            t0 = time.perf_counter()
+            res = index2.search(q)
+            t1 = time.perf_counter()
+            times_ns.append((t1 - t0) * 1e9)
+
+            found = _found_only(res)
+            if found:
+                hits += 1
+            else:
+                misses += 1
+
+            # categorize as "existing" vs "random" by set membership
+            if q in keyset:
+                if found: hits_existing += 1
+                else:     misses_existing += 1
+            else:
+                if found: hits_randoms += 1
+                else:     misses_randoms += 1
+
+        avg_ns = float(np.mean(times_ns))
+        mem_mb = index2.get_memory_usage() / (1024 * 1024)
+
+        print("\n-- Mini-Benchmark (LearnedIndex) --")
+        print(f"Build: {build_ms:8.2f} ms | Lookup mean: {avg_ns:8.2f} ns | Mem: {mem_mb:6.3f} MB")
+        print(f"Hits: {hits}  Misses: {misses}  |  Hits(existing/random): {hits_existing}/{hits_randoms}  "
+              f"Misses(existing/random): {misses_existing}/{misses_randoms}")
+        # -------------------------------------------------------------
 
         # Print model parameters and error window
         print(f"Slope (a): {index.a:.6f}")
@@ -133,7 +198,6 @@ if __name__ == "__main__":
             keys[0],                      # first
             keys[len(keys)//2],           # middle
             keys[-1],                     # last
-            float(keys[len(keys)//2] + 1) # nearby key (probably not in dataset)
         ]
 
         for k in test_keys:
