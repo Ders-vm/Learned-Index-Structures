@@ -92,7 +92,7 @@ class Benchmark:
         # ------------------------------------------------------------    
         print("\n-- Learned Index (Linear Regression) --")
 
-        for errorWindow in [128, 512, 1024, 100000]:
+        for errorWindow in [128, 512, 1024, 2048, 4096, 8192, 16384, 100000]:
             lm = LearnedIndex()
             lm.window = errorWindow
             build = Benchmark.measure_build_time(lm, keys)
