@@ -86,7 +86,7 @@ class LearnedIndex:
         found = (idx + left < n) and (self.keys[idx + left] == key)
 
         #for debug tracking
-        if found and (idx + left) == pred:
+        if found:
             self.correct_predictions += 1 # predicted position was correct
         elif not found:
             self.not_found += 1 # key was not found (no fallbacks so could be false negative)
