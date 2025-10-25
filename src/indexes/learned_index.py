@@ -104,7 +104,7 @@ class LearnedIndex:
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
     import numpy as np
-    from utils.data_loader import DatasetGenerator
+    from ..utils.data_loader import DatasetGenerator
 
     print("Sanity Check: LearnedIndex\n")
 
@@ -126,7 +126,6 @@ if __name__ == "__main__":
         # Print model parameters and error window
         print(f"Slope (a): {index.a:.6f}")
         print(f"Intercept (b): {index.b:.6f}")
-        print(f"Error window: [{index.min_error}, {index.max_error}]")
         print(f"Memory usage: {index.get_memory_usage() / 1024:.2f} KB")
 
         # Test a few existing keys
@@ -138,13 +137,13 @@ if __name__ == "__main__":
         ]
 
         for k in test_keys:
-            found, pos = index.search(k)
-            print(f"Key={k:.2f:>12} -> Found={found}, Pos={pos}")
+            found = index.search(k)
+            print(f"Key={k:.2f} -> Found={found}")
 
         # Test a random non-existing key
         q = float(np.random.uniform(keys.min(), keys.max()))
-        found, pos = index.search(q)
-        print(f"\nRandom query: {q:.2f} -> Found={found}, Pos={pos}")
+        found = index.search(q)
+        print(f"\nRandom query: {q:.2f} -> Found={found}")
     
     print("\nLearnedIndex sanity check complete.\n")
    
