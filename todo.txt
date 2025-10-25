@@ -1,0 +1,3 @@
+Linear:
+    add min/max error window model to compare to hard error Windows
+    try searchsorted instead of bisect on both ^ models
