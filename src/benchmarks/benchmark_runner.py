@@ -33,7 +33,7 @@ import numpy as np
 from src.indexes.btree import BTree
 from src.indexes.learned_index import LearnedIndex
 from src.indexes.rmi import RecursiveModelIndex
-
+from src.ml.shallow_nn_rmi import RecursiveModelIndexNN
 class Benchmark:
     """Benchmark tool for B-Tree performance."""
 
@@ -123,4 +123,20 @@ class Benchmark:
             "memory_mb": mem,
         }
 
+        # ------------------------------------------------------------
+        # TWO-STAGE RMI (SHALLOW NN ROOT)
+        # ------------------------------------------------------------
+        print("\n-- Two-Stage RMI (Shallow NN Root) --")
+        rmi_nn = RecursiveModelIndexNN(fanout=8192, hidden_dim=16, epochs=100, lr=0.01)
+        build = Benchmark.measure_build_time(rmi_nn, keys)
+        lookup = Benchmark.measure_lookup_time(rmi_nn, queries)
+        mem = rmi_nn.get_memory_usage() / (1024 * 1024)
+        print(f"RMI_NNRoot | Build: {build:>8.2f} ms | "
+              f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB")
+        
         return results
+
+if __name__ == "__main__":
+    n = 50_000  # number of keys to test
+    keys = np.sort(np.random.uniform(0, 1_000_000, n))
+    Benchmark.run("Uniform_50k", keys)
