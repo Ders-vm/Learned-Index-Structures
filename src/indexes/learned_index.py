@@ -27,6 +27,7 @@ class LearnedIndex:
     def __init__(self):
         self.a = 0.0  # slope
         self.b = 0.0  # intercept
+        self.window = 64  # default search window size
         self.keys = None  # the sorted keys
         self.correct_predictions = 0  # tracking correct predictions
         self.fallbacks = 0  # tracking fallbacks to full search
@@ -41,6 +42,7 @@ class LearnedIndex:
         self.keys = keys
         n = len(keys)
         if n == 0:
+            print("Warning: Building LearnedIndex with empty key array.")
             return
 
         # Normalize positions (0 to n-1)
@@ -52,11 +54,10 @@ class LearnedIndex:
     # ----------------------------------------------------------------------
     # Search
     # ----------------------------------------------------------------------
-    def search(self, key: float, window: int = 64) -> bool:
+    def search(self, key: float) -> bool:
         """Predict approximate position, then correct locally.
         Args:
             key: The key to search for.
-            window: Search window size around predicted position.
         Returns:
             bool indicating whether the key was found.
         """
@@ -73,8 +74,8 @@ class LearnedIndex:
         pred = max(0, min(n - 1, pred))
 
         # Define local search window
-        left = max(0, pred - window)
-        right = min(n, pred + window)
+        left = max(0, pred - self.window)
+        right = min(n, pred + self.window)
 
         # Local binary search correction
         idx = bisect.bisect_left(self.keys[left:right], key)

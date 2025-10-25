@@ -71,6 +71,7 @@ class Benchmark:
         # ------------------------------------------------------------
         # B-TREE BENCHMARKS
         # ------------------------------------------------------------
+        print("\n-- B-Tree Benchmarks --")
         for order in [32, 64, 128, 256]:
             tree = BTree(order=order)
             build = Benchmark.measure_build_time(tree, keys)
@@ -88,39 +89,53 @@ class Benchmark:
 
         # ------------------------------------------------------------
         # LEARNED INDEX BENCHMARK
-        # ------------------------------------------------------------
+        # ------------------------------------------------------------    
         print("\n-- Learned Index (Linear Regression) --")
 
-        lm = LearnedIndex()
-        build = Benchmark.measure_build_time(lm, keys)
-        lookup = Benchmark.measure_lookup_time(lm, queries)
-        mem = lm.get_memory_usage() / (1024 * 1024)
+        for errorWindow in [128, 512, 100000]:
+            lm = LearnedIndex()
+            lm.window = errorWindow
+            build = Benchmark.measure_build_time(lm, keys)
+            lookup = Benchmark.measure_lookup_time(lm, queries)
+            total_queries = lm.total_queries
+            correct_predictions = lm.correct_predictions
+            fallbacks = lm.fallbacks
+            not_found = lm.not_found
+            mem = lm.get_memory_usage() / (1024 * 1024)
 
-        print(f"LinearModel | Build: {build:>8.2f} ms | "
-              f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB")
+            print(f"Window {errorWindow:<4} | Build: {build:>8.2f} ms | "
+                  f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB | "
+                  f"Correct: {correct_predictions}/{total_queries} | "
+                  f"Fallbacks: {fallbacks} | Not Found: {not_found}")
 
-        results["LinearModel"] = {
-            "build_ms": build,
-            "lookup_ns": lookup,
-            "memory_mb": mem
-        }
+            results["LinearModel"] = {
+                "error_window": errorWindow,
+                "build_ms": build,
+                "total queries": total_queries,
+                "correct predictions": correct_predictions,
+                "fallbacks": fallbacks,
+                "not found": not_found,
+                "lookup_ns": lookup,
+                "memory_mb": mem
+            }
 
-        # ------------------------------------------------------------
-        # TWO-STAGE RMI BENCHMARK
-        # ------------------------------------------------------------
-        print("\n-- Two-Stage RMI --")
-        rmi = RecursiveModelIndex(fanout=8192)  # 128 leaf models (change to test different results)
-        build = Benchmark.measure_build_time(rmi, keys)
-        lookup = Benchmark.measure_lookup_time(rmi, queries)
-        mem = rmi.get_memory_usage() / (1024 * 1024)
-        print(
-            f"RMI_2Stage  | Build: {build:>8.2f} ms | "
-            f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB"
-        )
-        results["RMI_2Stage"] = {
-            "build_ms": build,
-            "lookup_ns": lookup,
-            "memory_mb": mem,
-        }
+
+        # # ------------------------------------------------------------
+        # # TWO-STAGE RMI BENCHMARK
+        # # ------------------------------------------------------------
+        # print("\n-- Two-Stage RMI --")
+        # rmi = RecursiveModelIndex(fanout=8192)  # 128 leaf models (change to test different results)
+        # build = Benchmark.measure_build_time(rmi, keys)
+        # lookup = Benchmark.measure_lookup_time(rmi, queries)
+        # mem = rmi.get_memory_usage() / (1024 * 1024)
+        # print(
+        #     f"RMI_2Stage  | Build: {build:>8.2f} ms | "
+        #     f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB"
+        # )
+        # results["RMI_2Stage"] = {
+        #     "build_ms": build,
+        #     "lookup_ns": lookup,
+        #     "memory_mb": mem,
+        # }
 
         return results
