@@ -1,3 +1,6 @@
 Linear:
-    add min/max error window model to compare to hard error Windows
+    add min/max (adaptive) error window model to compare to hard error Windows
     try searchsorted instead of bisect on both ^ models
+    test how long the binary searches are taking
+    test how long arranging is taking compared to actually calculating the polyfit
+    figure out if memory storage numbers are accurate, if predicition of position is accurate the keys dont need to be stored
