@@ -148,34 +148,30 @@ class Benchmark:
 
 
 
-        # # ------------------------------------------------------------
-        # # TWO-STAGE RMI BENCHMARK
-        # # ------------------------------------------------------------
-        # print("\n-- Two-Stage RMI --")
-        # rmi = RecursiveModelIndex(fanout=8192)  # 128 leaf models (change to test different results)
-        # build = Benchmark.measure_build_time(rmi, keys)
-        # lookup = Benchmark.measure_lookup_time(rmi, queries)
-        # mem = rmi.get_memory_usage() / (1024 * 1024)
-        # print(
-        #     f"RMI_2Stage  | Build: {build:>8.2f} ms | "
-        #     f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB"
-        # )
-        # results["RMI_2Stage"] = {
-        #     "build_ms": build,
-        #     "lookup_ns": lookup,
-        #     "memory_mb": mem,
-        # }
+        # ------------------------------------------------------------
+        # TWO-STAGE RMI BENCHMARK
+        # ------------------------------------------------------------
+        print("\n-- Two-Stage RMI --")
+        rmi = RecursiveModelIndex(fanout=8192)  # 128 leaf models (change to test different results)
+        build = Benchmark.measure_build_time(rmi, keys)
+        lookup = Benchmark.measure_lookup_time(rmi, queries)
+        mem = rmi.get_memory_usage() / (1024 * 1024)
+        print(
+            f"RMI_2Stage  | Build: {build:>8.2f} ms | "
+            f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB"
+        )
+        
 
-        # # ------------------------------------------------------------
-        # # TWO-STAGE RMI (SHALLOW NN ROOT)
-        # # ------------------------------------------------------------
-        # print("\n-- Two-Stage RMI (Shallow NN Root) --")
-        # rmi_nn = RecursiveModelIndexNN(fanout=8192, hidden_dim=16, epochs=100, lr=0.01)
-        # build = Benchmark.measure_build_time(rmi_nn, keys)
-        # lookup = Benchmark.measure_lookup_time(rmi_nn, queries)
-        # mem = rmi_nn.get_memory_usage() / (1024 * 1024)
-        # print(f"RMI_NNRoot | Build: {build:>8.2f} ms | "
-        #       f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB")
+        # ------------------------------------------------------------
+        # TWO-STAGE RMI (SHALLOW NN ROOT)
+        # ------------------------------------------------------------
+        print("\n-- Two-Stage RMI (Shallow NN Root) --")
+        rmi_nn = RecursiveModelIndexNN(fanout=8192, hidden_dim=16, epochs=100, lr=0.01)
+        build = Benchmark.measure_build_time(rmi_nn, keys)
+        lookup = Benchmark.measure_lookup_time(rmi_nn, queries)
+        mem = rmi_nn.get_memory_usage() / (1024 * 1024)
+        print(f"RMI_NNRoot | Build: {build:>8.2f} ms | "
+              f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB")
         
         # return results
 
