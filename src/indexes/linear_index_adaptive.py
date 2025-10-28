@@ -21,7 +21,7 @@ import numpy as np
 import bisect
 
 
-class LearnedIndex:
+class LinearIndexAdaptive:
     """Simple learned index using linear regression and adaptive local search correction."""
 
     def __init__(self, bins: int = 128, quantile: float = 0.995, min_window: int = 4):
@@ -77,7 +77,7 @@ class LearnedIndex:
         abs_err = np.abs(positions - pred_clamped)
 
         # Bin by predicted index
-        bin_edges = np.linspace(0, n, num=self._bins + 1)
+        bin_edges = np.linspace(0, n, num=self._bins + 1) # include right edge of bin bassically makes it so we dont miss an edge
         bin_ids = np.clip(np.digitize(pred_clamped, bin_edges, right=False) - 1, 0, self._bins - 1)
 
         bin_windows = np.full(self._bins, self._min_window, dtype=int)
@@ -168,7 +168,7 @@ class LearnedIndex:
 
 # ----------------------------------------------------------------------
 # Quick sanity check / debug test
-# use in console to run : python -m src.indexes.linear_index_adaptive   
+# use in console to run : python -m src.indexes.linear_index_adaptive
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
     import numpy as np
@@ -189,7 +189,7 @@ if __name__ == "__main__":
 
         # Generate and build
         keys = gen_func(100_000)
-        index = LearnedIndex()
+        index = LinearIndexAdaptive()
         index.build_from_sorted_array(keys)
 
                         # ---- Mini-benchmark (same methodology as Benchmark.run) ----
@@ -197,7 +197,7 @@ if __name__ == "__main__":
         num_queries = 1000
         # Build timing (rebuild once just for timing fairness)
         t0 = time.perf_counter()
-        index2 = LearnedIndex()
+        index2 = LinearIndexAdaptive()
         index2.build_from_sorted_array(keys)
         t1 = time.perf_counter()
         build_ms = (t1 - t0) * 1000.0
