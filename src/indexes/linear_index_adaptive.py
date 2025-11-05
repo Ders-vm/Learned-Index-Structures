@@ -21,25 +21,39 @@ import numpy as np
 import bisect
 
 
-class LearnedIndex:
-    """Simple learned index using linear regression and local search correction."""
+class LinearIndexAdaptive:
+    """Simple learned index using linear regression and adaptive local search correction."""
 
-    def __init__(self):
+    def __init__(self, bins: int = 128, quantile: float = 0.995, min_window: int = 4):
         self.a = 0.0  # slope
         self.b = 0.0  # intercept
-        self.window = 64  # default search window size
-        self.keys = None  # the sorted keys
-        self.correct_predictions = 0  # tracking correct predictions
-        self.fallbacks = 0  # tracking fallbacks to full search
-        self.false_negatives = 0  # tracking false negatives / wrong predictions
-        self.not_found = 0  # tracking not found cases
-        self.total_queries = 0  # total queries made
+
+        # fallback default window for uninitialized cases
+        self.window = 64
+
+        # adaptive-window parameters
+        self._bins = bins
+        self._quantile = quantile
+        self._min_window = int(min_window)
+
+        # learned per-bin windows and edges
+        self._bin_edges = None
+        self._bin_windows = None
+
+        self.keys = None
+
+        # tracking stats
+        self.correct_predictions = 0
+        self.fallbacks = 0
+        self.false_negatives = 0
+        self.not_found = 0
+        self.total_queries = 0
 
     # ----------------------------------------------------------------------
-    # Build
+    # Build phase
     # ----------------------------------------------------------------------
     def build_from_sorted_array(self, keys: np.ndarray):
-        """Fit a linear regression model to predict key position."""
+        """Fit a linear regression model to predict key position and compute adaptive windows."""
         self.keys = keys
         n = len(keys)
         if n == 0:
@@ -52,9 +66,51 @@ class LearnedIndex:
         # Fit simple linear regression: position ≈ a * key + b
         self.a, self.b = np.polyfit(keys, positions, 1)
 
+        # Compute per-bin adaptive windows
+        self._compute_adaptive_windows(keys, positions)
+
+    def _compute_adaptive_windows(self, keys: np.ndarray, positions: np.ndarray):
+        """Compute per-bin correction windows using percentile absolute residuals."""
+        n = len(keys)
+        pred = self.a * keys + self.b
+        pred_clamped = np.clip(pred, 0, n - 1)
+        abs_err = np.abs(positions - pred_clamped)
+
+        # Bin by predicted index
+        bin_edges = np.linspace(0, n, num=self._bins + 1) # include right edge of bin bassically makes it so we dont miss an edge
+        bin_ids = np.clip(np.digitize(pred_clamped, bin_edges, right=False) - 1, 0, self._bins - 1)
+
+        bin_windows = np.full(self._bins, self._min_window, dtype=int)
+        for b in range(self._bins):
+            errs_b = abs_err[bin_ids == b]
+            if errs_b.size > 0:
+                w = int(np.ceil(np.quantile(errs_b, self._quantile)))
+                bin_windows[b] = max(w, self._min_window)
+            else:
+                bin_windows[b] = max(self.window, self._min_window)
+
+        # Smooth to avoid spikes between neighboring bins
+        smoothed = bin_windows.copy()
+        for b in range(self._bins):
+            left = max(0, b - 1)
+            right = min(self._bins - 1, b + 1)
+            smoothed[b] = int(np.median(bin_windows[left:right + 1]))
+        bin_windows = smoothed
+
+        self._bin_edges = bin_edges
+        self._bin_windows = bin_windows
+
+
     # ----------------------------------------------------------------------
-    # Search
+    # Search phase
     # ----------------------------------------------------------------------
+    def _window_for_pred(self, pred_idx: int, n: int) -> int:
+        """Pick an adaptive window based on predicted index's bin."""
+        if self._bin_edges is None or self._bin_windows is None:
+            return self.window
+        b = np.clip(np.digitize([pred_idx], self._bin_edges, right=False)[0] - 1, 0, self._bins - 1)
+        return int(self._bin_windows[b])
+
     def search(self, key: float) -> bool:
         """Predict approximate position, then correct locally.
         Args:
@@ -74,44 +130,45 @@ class LearnedIndex:
         # Clamp to valid range
         pred = max(0, min(n - 1, pred))
 
-        # Define local search window
-        left = max(0, pred - self.window)
-        right = min(n, pred + self.window)
+        # Pick adaptive window for this region
+        win = self._window_for_pred(pred, n)
 
-        # Local binary search correction
+        # Local search
+        left = max(0, pred - win)
+        right = min(n, pred + win)
         idx = bisect.bisect_left(self.keys[left:right], key)
-
-        # try this TODO
-        #idx = np.searchsorted(self.keys[left:right], key, side='left')
-
         found = (idx + left < n) and (self.keys[idx + left] == key)
 
-        #for debug tracking
         if found:
-            self.correct_predictions += 1 # predicted position was correct
-        elif not found:
-            # fall back to full search
-            self.fallbacks += 1
-            # Perform full search as fallback
-            full_idx = bisect.bisect_left(self.keys, key)
-            if full_idx < n and self.keys[full_idx] == key:
-                found = True
-                self.false_negatives += 1
-            else:
-                self.not_found += 1
-        return found
+            self.correct_predictions += 1
+            return True
+
+        # Fallback full-array search
+        self.fallbacks += 1
+        full_idx = bisect.bisect_left(self.keys, key)
+        if full_idx < n and self.keys[full_idx] == key:
+            self.false_negatives += 1
+            return True
+
+        self.not_found += 1
+        return False
 
     # ----------------------------------------------------------------------
     # Memory usage estimate
     # ----------------------------------------------------------------------
     def get_memory_usage(self) -> int:
-        """Approximate memory usage in bytes."""
-        return len(self.keys) * 8 + 16 + 16  # keys + a/b params + overhead
-    
+        base = (len(self.keys) * 8 if self.keys is not None else 0) + 16 + 16
+        extra = 0
+        if self._bin_edges is not None:
+            extra += self._bin_edges.nbytes
+        if self._bin_windows is not None:
+            extra += self._bin_windows.nbytes
+        return base + extra
+
 
 # ----------------------------------------------------------------------
 # Quick sanity check / debug test
-# use in console to run : python -m src.indexes.learned_index  
+# use in console to run : python -m src.indexes.linear_index_adaptive
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
     import numpy as np
@@ -132,7 +189,7 @@ if __name__ == "__main__":
 
         # Generate and build
         keys = gen_func(100_000)
-        index = LearnedIndex()
+        index = LinearIndexAdaptive()
         index.build_from_sorted_array(keys)
 
                         # ---- Mini-benchmark (same methodology as Benchmark.run) ----
@@ -140,7 +197,7 @@ if __name__ == "__main__":
         num_queries = 1000
         # Build timing (rebuild once just for timing fairness)
         t0 = time.perf_counter()
-        index2 = LearnedIndex()
+        index2 = LinearIndexAdaptive()
         index2.build_from_sorted_array(keys)
         t1 = time.perf_counter()
         build_ms = (t1 - t0) * 1000.0
@@ -220,4 +277,3 @@ if __name__ == "__main__":
         print(f"\nRandom query: {q:.2f} -> Found={found}")
     
     print("\nLearnedIndex sanity check complete.\n")
-   

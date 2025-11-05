@@ -99,9 +99,9 @@ class BTree:
     def _search_recursive(self, node: BTreeNode, key: float):
         idx = bisect.bisect_left(node.keys, key)
         if idx < len(node.keys) and node.keys[idx] == key:
-            return True, 1
+            return True
         if node.leaf:
-            return False, 1
+            return False
         return self._search_recursive(node.children[idx], key)
 
     # ----------------------------------------------------------------------

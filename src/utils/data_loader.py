@@ -27,6 +27,7 @@ Next Steps:
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 class DatasetGenerator:
     """Generate small test datasets for Phase 1 B-Tree benchmarks."""
@@ -53,18 +54,32 @@ class DatasetGenerator:
 
 
 # -----------------------------------------------------------------------------
-# Quick-run tester delete later when not needed.
+# Quick-run tester: save + show interactive plots
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
-    print("🔍 Testing DatasetGenerator...\n")
+    print("Generating datasets and plotting\n")
 
-    seq = DatasetGenerator.generate_sequential(10)
-    print("Sequential (10):", seq)
+    size = 100_000  # 100k points per plot
 
-    uniform = DatasetGenerator.generate_uniform(10)
-    print("\nUniform (10):", uniform)
+    seq = DatasetGenerator.generate_sequential(size)
+    uniform = DatasetGenerator.generate_uniform(size)
+    mixed = DatasetGenerator.generate_mixed(size)
 
-    mixed = DatasetGenerator.generate_mixed(10)
-    print("\nMixed (10):", mixed)
+    print("Datasets generated.")
 
-    print("\n✅ DatasetGenerator test complete.")
+    # show each plot
+    def plot_data(data, title):
+        plt.figure(figsize=(10, 4))
+        plt.plot(data, '.', markersize=1)
+        plt.title(f"{title} (100,000 points)")
+        plt.xlabel("Index")
+        plt.ylabel("Key Value")
+        plt.tight_layout()
+        plt.show()  
+
+    # Plot and show each dataset
+    plot_data(seq, "Sequential Dataset")
+    plot_data(uniform, "Uniform Dataset")
+    plot_data(mixed, "Mixed Dataset")
+
+    print("\nAll plots saved and displayed.")

@@ -5,7 +5,8 @@ from src.benchmarks.benchmark_runner import Benchmark
 def main():
     print("🧠 Phase 1 – B-Tree Benchmark\n")
 
-    sizes = [10_000, 100_000, 1_000_000]   # dataset sizes to test
+    #sizes = [10_000, 100_000, 1_000_000]   # dataset sizes to test TODO uncomment at the end
+    sizes = [100_000]  # Temporarily limit to 100k for quicker tests
     for size in sizes:
         print(f"\n{'#'*70}\nTesting {size:,} keys\n{'#'*70}")
 
