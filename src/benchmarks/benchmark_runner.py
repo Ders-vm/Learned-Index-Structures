@@ -51,8 +51,6 @@ class Benchmark:
         # Warmup
         for q in queries[:50]:
             index.search(q)
-        
-        # CORRECT - measures actual performance
         start = time.perf_counter()
         for q in queries:
             index.search(q)  # No timing overhead per call
