@@ -52,13 +52,13 @@ class Benchmark:
         for q in queries[:50]:
             index.search(q)
         
-        times = []
+        # CORRECT - measures actual performance
+        start = time.perf_counter()
         for q in queries:
-            start = time.perf_counter()
-            index.search(q)
-            end = time.perf_counter()
-            times.append((end - start) * 1e9)  # ns
-        return np.mean(times)
+            index.search(q)  # No timing overhead per call
+        end = time.perf_counter()
+        total_time = (end - start) * 1e9 / len(queries)  # Convert to ns per query
+        return total_time
 
     @staticmethod
     def run(dataset_name: str, keys: np.ndarray, num_queries: int = 1000):
