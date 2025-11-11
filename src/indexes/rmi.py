@@ -206,6 +206,22 @@ class RecursiveModelIndex:
         total += 256
         return int(total)
 
+    # ------------------------------------------------------------------
+    # Predictions
+    # ------------------------------------------------------------------ 
+    def predict(self, key: float) -> float:
+        if self.keys is None or self.n == 0:
+            return -1
+
+        # Stage 0: predict global position and map to segment id
+        pos0 = self.a0 * key + self.b0
+
+        # Convert pos to segment id using equal-sized position partitions
+        denom = max(1.0, float(self.n - 1))
+        s = int(np.floor(np.clip((pos0 / denom) * self.fanout, 0, self.fanout - 1)))
+
+        # Stage 1: Leaf Model
+        return float(self.seg_a[s] * key + self.seg_b[s])
 
 # Quick self-test
 if __name__ == "__main__":

@@ -165,6 +165,17 @@ class LinearIndexAdaptive:
             extra += self._bin_windows.nbytes
         return base + extra
 
+    # ----------------------------------------------------------------------
+    # Predict position
+    # ----------------------------------------------------------------------
+    def predict(self, key: float) -> int:
+        if self.keys is None or len(self.keys) == 0:
+            return -1
+        n = len(self.keys)
+        pred = int(self.a * key + self.b)
+        pred = max(0, min(n - 1, pred))
+        return pred
+
 
 # ----------------------------------------------------------------------
 # Quick sanity check / debug test

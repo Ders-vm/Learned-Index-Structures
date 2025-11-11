@@ -107,6 +107,17 @@ class LearnedIndex:
     def get_memory_usage(self) -> int:
         """Approximate memory usage in bytes."""
         return len(self.keys) * 8 + 16 + 16  # keys + a/b params + overhead
+        
+    # ----------------------------------------------------------------------
+    # Prediction accuracy
+    # ----------------------------------------------------------------------
+    def predict(self, key: float) -> int:
+
+        pred = int(self.a * key + self.b)
+        n = len(self.keys) if self.keys is not None else 0
+        # Clamp to valid range
+        pred = max(0, min(n - 1, pred))
+        return pred
     
 
 # ----------------------------------------------------------------------
