@@ -19,3 +19,4 @@ torchvision==0.24.0
 torchaudio==2.9.0
 jupytext==1.18.1
 ipykernel==7.1.0
+pgm-index==0.3.2

@@ -35,6 +35,7 @@ from src.indexes.learned_index import LearnedIndex
 from src.indexes.rmi import RecursiveModelIndex
 from src.ml.shallow_nn_rmi import RecursiveModelIndexNN
 from src.indexes.linear_index_adaptive import LinearIndexAdaptive
+from src.indexes.pgm_index import PGMIndex
 class Benchmark:
     """Benchmark tool for B-Tree performance."""
 
@@ -173,7 +174,21 @@ class Benchmark:
         print(f"RMI_NNRoot | Build: {build:>8.2f} ms | "
               f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB")
         
-        # return results
+        # ------------------------------------------------------------
+        # PGM-INDEX BENCHMARK
+        # ------------------------------------------------------------
+        print("\n-- PGM-Index --")
+        for epsilon in [32, 64, 128, 256, 512]:
+            pgm_index = PGMIndex(epsilon=epsilon)
+            build = Benchmark.measure_build_time(pgm_index, keys)
+            lookup = Benchmark.measure_lookup_time(pgm_index, queries)
+            mem = pgm_index.get_memory_usage() / (1024 * 1024)
+            segments = len(pgm_index.segments) if pgm_index.built else 0
+            print(f"ε={epsilon:<3} | Build: {build:>8.2f} ms | "
+                  f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB | "
+                  f"Segments: {segments}")
+        
+        return results
 
 if __name__ == "__main__":
     n = 50_000  # number of keys to test
