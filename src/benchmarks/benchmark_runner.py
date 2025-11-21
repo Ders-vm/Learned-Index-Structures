@@ -48,13 +48,15 @@ class Benchmark:
 
     @staticmethod
     def measure_lookup_time(index, queries: np.ndarray) -> float:
-        times = []
-        for q in queries:
-            start = time.perf_counter()
+        # Warmup
+        for q in queries[:50]:
             index.search(q)
-            end = time.perf_counter()
-            times.append((end - start) * 1e9)  # ns
-        return np.mean(times)
+        start = time.perf_counter()
+        for q in queries:
+            index.search(q)  # No timing overhead per call
+        end = time.perf_counter()
+        total_time = (end - start) * 1e9 / len(queries)  # Convert to ns per query
+        return total_time
 
     @staticmethod
     def run(dataset_name: str, keys: np.ndarray, num_queries: int = 1000):
@@ -182,11 +184,18 @@ class Benchmark:
             pgm_index = PGMIndex(epsilon=epsilon)
             build = Benchmark.measure_build_time(pgm_index, keys)
             lookup = Benchmark.measure_lookup_time(pgm_index, queries)
+            total_queries = pgm_index.total_queries
+            correct_predictions = pgm_index.correct_predictions
+            fallbacks = pgm_index.fallbacks
+            false_negatives = pgm_index.false_negatives
+            not_found = pgm_index.not_found
             mem = pgm_index.get_memory_usage() / (1024 * 1024)
             segments = len(pgm_index.segments) if pgm_index.built else 0
             print(f"ε={epsilon:<3} | Build: {build:>8.2f} ms | "
                   f"Lookup: {lookup:>8.2f} ns | Mem: {mem:>6.3f} MB | "
-                  f"Segments: {segments}")
+                  f"Correct: {correct_predictions}/500 | "
+                  f"Fallbacks: {fallbacks} | Not Found: {not_found} | "
+                  f"False Negatives: {false_negatives} | Segments: {segments}")
         
         return results
 
