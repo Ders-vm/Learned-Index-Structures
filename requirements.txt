@@ -17,4 +17,7 @@ six==1.17.0
 torch==2.9.0
 torchvision==0.24.0
 torchaudio==2.9.0
+jupytext==1.18.1
+ipykernel==7.1.0
+pgm-index==0.3.2
 pygm-1.0.1
