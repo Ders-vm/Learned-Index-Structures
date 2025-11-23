@@ -34,7 +34,7 @@ FIXED_WINDOWS = [64, 128, 256, 512, 1024]
 ADAPTIVE_Q = [0.99, 0.995, 0.999]
 ADAPTIVE_MIN_W = [8, 16, 32]
 
-REPEAT_CYCLES = 100  # how many full cycles to run
+REPEAT_CYCLES = 3  # how many full cycles to run
 RESULTS_DIR = "results/overnight"
 
 
