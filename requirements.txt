@@ -1,8 +1,9 @@
 numpy
 matplotlib
 torch
-
-# optional tools (safe and useful)
+pandas
+seaborn
+scipy
 ipykernel
 jupytext
 pytest
