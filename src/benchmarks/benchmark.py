@@ -16,7 +16,7 @@ WHAT IT DOES:
 MODELS TESTED:
     - Your implementations: Linear Fixed, Linear Adaptive
     - Kraska baseline: Single-stage, RMI (Recursive Model Index)
-    - Traditional: B-Tree, PGM
+    - Traditional: B-Tree
     
 HOW IT WORKS:
     For each (dataset_size, distribution, model, configuration) combination:
@@ -94,9 +94,6 @@ FIXED_WINDOWS = [64, 128, 256, 512, 1024]
 # Linear Adaptive: Quantile and minimum window combinations
 ADAPTIVE_Q = [0.99, 0.995, 0.999]
 ADAPTIVE_MIN_W = [8, 16, 32]
-
-# PGM: Error bounds (realistic values only)
-PGM_EPSILONS = [64, 128, 256]
 
 # Kraska Single-Stage: Model types
 KRASKA_SINGLE_MODELS = ['linear', 'polynomial']
@@ -546,7 +543,7 @@ def main():
     print(f"\nModels tested:")
     print(f"  • Your models (Linear Fixed, Linear Adaptive)")
     print(f"  • Kraska models (Single-stage, RMI)")
-    print(f"  • Baselines (B-Tree, PGM)")
+    print(f"  • Baselines (B-Tree)")
     print()
     
     # Main benchmark loop

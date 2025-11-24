@@ -33,7 +33,6 @@ MODEL FILTERING:
     - Kraska Single - baseline from paper
     - Kraska RMI [1,100] - paper's recommended configuration
     - B-Tree (order=128) - traditional baseline
-    - PGM (ε=128) - state-of-art compressed index
 
 HOW IT TIES TOGETHER:
     run_benchmarks.py → Generates master.csv with all test results
@@ -152,12 +151,6 @@ def get_display_name(row):
             return "B-Tree"
         return None
     
-    # PGM: Keep only eps=128 (middle ground)
-    elif model == 'pgm':
-        if 'eps=128' in params:
-            return "PGM"
-        return None
-    
     # Unknown model: filter out
     return None
 
@@ -168,7 +161,7 @@ def get_model_color(model_name):
     
     YOUR MODELS: Green tones (stands out as "ours")
     KRASKA: Red/Blue (baseline comparison)
-    OTHERS: Gray/Purple (traditional baselines)
+    B-TREE: Gray (traditional baseline)
     
     Args:
         model_name: Display name from get_display_name()
@@ -182,7 +175,6 @@ def get_model_color(model_name):
         "Kraska Single": "#E74C3C",            # Red - KRASKA BASELINE
         "Kraska RMI": "#3498DB",               # Blue - KRASKA ADVANCED
         "B-Tree": "#95A5A6",                   # Gray - TRADITIONAL
-        "PGM": "#9B59B6",                      # Purple - COMPRESSED
     }
     return colors.get(model_name, "#34495E")  # Dark gray default
 
