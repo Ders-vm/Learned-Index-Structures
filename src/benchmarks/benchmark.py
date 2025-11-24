@@ -31,7 +31,7 @@ OUTPUT:
     results/benchmarks/run_YYYY-MM-DD_HH-MM-SS/master.csv
     
 TYPICAL RUNTIME:
-    3-5 hours for full benchmark (5 sizes × 3 distributions × ~30 configs × 5 cycles)
+    5-10 minutes for full benchmark (5 sizes × 3 distributions × ~30 configs × 5 cycles)
 
 USAGE:
     python benchmarks/run_benchmarks.py
