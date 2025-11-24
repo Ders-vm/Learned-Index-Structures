@@ -1,7 +1,0 @@
-Linear:
-    add min/max (adaptive) error window model to compare to hard error Windows (doing currently)
-    try searchsorted instead of bisect on both ^ models
-    test how long the binary searches are taking when in predicted window
-    test how long the binary searches are taking compared to an entire fall back indexwide binary search
-    test how long arranging is taking compared to actually calculating the polyfit
-    figure out if memory storage numbers are accurate, if predicition of position is accurate do the keys dont need to be stored?

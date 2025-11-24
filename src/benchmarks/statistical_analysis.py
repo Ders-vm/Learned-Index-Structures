@@ -1,130 +1,155 @@
 """
-==========================================================================================
-📊  LEARNED INDEX STRUCTURES — STATISTICAL ANALYSIS
-==========================================================================================
-Automatically:
-    • finds the latest benchmark run
-    • loads master.csv
-    • computes mean, std, CV, 95% CI
-    • performs t-tests + effect sizes
-    • generates LaTeX-ready tables
-==========================================================================================
+Simplified Statistical Analysis for Benchmark Results
+Focuses on lookup times and significance testing.
 """
 
-import os
-import numpy as np
 import pandas as pd
+import numpy as np
 from scipy import stats
+import os
 
-
-# ==========================================================================================
-# STATISTICAL ANALYSIS FUNCTION (this was missing!)
-# ==========================================================================================
 
 def analyze_statistical_significance(master_csv_path):
-    """Compute means, variance, CI, t-tests, and effect sizes."""
-    
+    """
+    Perform statistical analysis focusing on lookup time and accuracy.
+    Handles missing or invalid accuracy values gracefully.
+    """
+
     df = pd.read_csv(master_csv_path)
 
-    print("\n------------------------------------------------------------------------------------------")
-    print("📈 Running statistical significance analysis...")
-    print("------------------------------------------------------------------------------------------")
+    # Handle missing accuracy column
+    if "accuracy" not in df.columns:
+        print("\n⚠️  'accuracy' column not found in CSV — filling with 0.0")
+        df["accuracy"] = 0.0
+    else:
+        # Replace non-numeric or NaN accuracy values with 0.0
+        df["accuracy"] = pd.to_numeric(df["accuracy"], errors="coerce").fillna(0.0)
 
-    # ---------------------------
-    # Group by model + dataset
-    # ---------------------------
-    grouped = df.groupby(['model', 'dataset_size', 'distribution'])
+    print("\n" + "=" * 80)
+    print("BENCHMARK STATISTICAL SUMMARY")
+    print("=" * 80)
 
+    # Group by model, dataset size, and distribution
+    grouped = df.groupby(["model", "dataset_size", "distribution"])
+
+    # Compute lookup and accuracy statistics
     stats_df = grouped.agg({
-        'lookup_ns': ['mean', 'std', 'min', 'max', 'count'],
-        'build_ms': ['mean', 'std'],
-        'accuracy': ['mean', 'std'],
-        'memory_mb': ['mean']
+        "lookup_ns": ["mean", "std", "count"],
+        "accuracy": ["mean", "std"]
     }).reset_index()
 
-    # Flatten multiindex
-    stats_df.columns = ['_'.join(col).strip('_') for col in stats_df.columns.values]
+    # Flatten multi-level columns
+    stats_df.columns = ["_".join(col).strip("_") for col in stats_df.columns.values]
 
-    # CV
-    stats_df['lookup_cv'] = stats_df['lookup_ns_std'] / stats_df['lookup_ns_mean']
+    # Compute coefficient of variation and 95% confidence interval
+    stats_df["lookup_cv"] = stats_df["lookup_ns_std"] / stats_df["lookup_ns_mean"]
+    stats_df["lookup_ci"] = 1.96 * stats_df["lookup_ns_std"] / np.sqrt(stats_df["lookup_ns_count"])
 
-    # 95% CI
-    stats_df['lookup_ci'] = 1.96 * stats_df['lookup_ns_std'] / np.sqrt(stats_df['lookup_ns_count'])
+    # Convert nanoseconds to microseconds
+    stats_df["lookup_us_mean"] = stats_df["lookup_ns_mean"] / 1000
+    stats_df["lookup_us_ci"] = stats_df["lookup_ci"] / 1000
+
+    # Replace NaN accuracy means with 0.0
+    stats_df["accuracy_mean"] = stats_df["accuracy_mean"].fillna(0.0)
 
     # Save summary
-    out_csv = master_csv_path.replace("master.csv", "statistical_summary.csv")
-    stats_df.to_csv(out_csv, index=False)
+    output_path = master_csv_path.replace("master.csv", "lookup_summary.csv")
+    stats_df.to_csv(output_path, index=False)
+    print(f"\n✓ Summary saved to: {output_path}")
 
-    print(f"\n✓ Saved statistical summary → {out_csv}\n")
+    # Focus on largest dataset (usually 1M keys)
+    max_size = stats_df["dataset_size"].max()
+    largest = stats_df[stats_df["dataset_size"] == max_size]
 
+    print("\n" + "=" * 80)
+    print(f"RESULTS FOR LARGEST DATASET ({max_size:,} keys)")
+    print("=" * 80)
+    print(f"{'Model':<20} {'Distribution':<12} {'Lookup (µs)':>15} {'±95% CI':>12} {'CV':>8} {'Accuracy':>10}")
+    print("-" * 85)
+
+    for _, row in largest.iterrows():
+        print(f"{row['model']:<20} {row['distribution']:<12} "
+              f"{row['lookup_us_mean']:>15.2f} {row['lookup_us_ci']:>12.2f} "
+              f"{row['lookup_cv']:>8.2%} {row['accuracy_mean']:>10.4f}")
+
+    # Statistical significance testing (Uniform distribution only)
+    print("\n" + "=" * 80)
+    print("PAIRWISE SIGNIFICANCE TESTS (Uniform Distribution)")
+    print("=" * 80)
+
+    uniform_large = df[
+        (df["dataset_size"] == max_size) & (df["distribution"] == "uniform")
+    ]
+
+    models = sorted(uniform_large["model"].unique())
+
+    if len(models) < 2:
+        print("\n⚠️  Not enough models for significance testing.")
+    else:
+        print(f"{'Comparison':<40} {'Faster Model':<20} {'Speedup':>8} {'p-value':>10} {'Sig':>5}")
+        print("-" * 85)
+
+        for i, model1 in enumerate(models):
+            for model2 in models[i + 1:]:
+                data1 = uniform_large[uniform_large["model"] == model1]["lookup_ns"]
+                data2 = uniform_large[uniform_large["model"] == model2]["lookup_ns"]
+
+                if len(data1) > 1 and len(data2) > 1:
+                    t_stat, p_value = stats.ttest_ind(data1, data2)
+                    mean1, mean2 = data1.mean(), data2.mean()
+                    faster = model1 if mean1 < mean2 else model2
+                    speedup = max(mean1, mean2) / min(mean1, mean2)
+                    sig = (
+                        "***" if p_value < 0.001 else
+                        "**" if p_value < 0.01 else
+                        "*" if p_value < 0.05 else "ns"
+                    )
+
+                    print(f"{model1} vs {model2:<30} {faster:<20} "
+                          f"{speedup:>7.2f}x {p_value:>10.4f} {sig:>5}")
+
+        print("\nSignificance: *** p<0.001, ** p<0.01, * p<0.05, ns = not significant")
+
+    # Flag any high-variance results
+    print("\n" + "=" * 80)
+    print("VARIANCE CHECK (CV > 10%)")
+    print("=" * 80)
+    high_var = largest[largest["lookup_cv"] > 0.1]
+    if not high_var.empty:
+        print(f"{'Model':<20} {'Distribution':<12} {'CV':>8}")
+        print("-" * 45)
+        for _, row in high_var.iterrows():
+            print(f"{row['model']:<20} {row['distribution']:<12} {row['lookup_cv']:>8.2%}")
+    else:
+        print("✓ All variance levels acceptable (CV < 10%)")
+
+    print("\n✅ Analysis complete!\n")
     return stats_df
 
 
-# ==========================================================================================
-# FIND LATEST RUN
-# ==========================================================================================
-
-def find_latest_run():
-    root = "results/benchmarks"
-    if not os.path.exists(root):
-        print("❌ No results/benchmarks directory found.")
-        return None
-
-    runs = [os.path.join(root, d) for d in os.listdir(root) if d.startswith("run_")]
-    if not runs:
-        print("❌ No runs found.")
-        return None
-
-    return max(runs, key=os.path.getmtime)
-
-
-# ==========================================================================================
-# PRETTY PRINT SUMMARY (academic style)
-# ==========================================================================================
-
-def print_pretty_summary(stats_df):
-    print("\n==========================================================================================")
-    print("📘  SUMMARY — Largest Dataset")
-    print("==========================================================================================")
-
-    largest = stats_df[stats_df['dataset_size'] == stats_df['dataset_size'].max()]
-
-    print(f"\nDataset size = {largest['dataset_size'].max():,}\n")
-    print(f"{'Model':<18} {'Dist':<10} {'Lookup (µs)':>15} {'±95% CI':>12} {'CV':>8}")
-    print("-" * 80)
-
-    for _, row in largest.iterrows():
-        lookup_us = row['lookup_ns_mean'] / 1000
-        ci_us = row['lookup_ci'] / 1000
-
-        print(f"{row['model']:<18} {row['distribution']:<10}"
-              f"{lookup_us:>15.2f} {ci_us:>12.2f} {row['lookup_cv']:>8.2%}")
-
-
-# ==========================================================================================
-# MAIN EXECUTION
-# ==========================================================================================
-
 if __name__ == "__main__":
+    import sys
 
-    print("""
-==========================================================================================
-📊  LEARNED INDEX STRUCTURES — STATISTICAL ANALYSIS
-==========================================================================================
-    """)
+    if len(sys.argv) > 1:
+        master_csv = sys.argv[1]
+    else:
+        # Auto-detect latest benchmark run
+        results_root = "results/benchmarks"
+        if os.path.exists(results_root):
+            subdirs = [
+                os.path.join(results_root, d)
+                for d in os.listdir(results_root)
+                if d.startswith("run_")
+            ]
+            if subdirs:
+                latest = max(subdirs, key=os.path.getmtime)
+                master_csv = os.path.join(latest, "master.csv")
+            else:
+                print("❌ No benchmark results found")
+                sys.exit(1)
+        else:
+            print("❌ results/benchmarks directory not found")
+            sys.exit(1)
 
-    latest = find_latest_run()
-    if latest is None:
-        raise SystemExit
-
-    print(f"📁 Auto-detected latest run:\n   → {latest}")
-
-    master_csv = os.path.join(latest, "master.csv")
-    print(f"\n📄 Using master CSV:\n   → {master_csv}")
-
-    stats_df = analyze_statistical_significance(master_csv)
-
-    print_pretty_summary(stats_df)
-
-    print("\n✓ Analysis complete. Ready for LaTeX tables and charts.\n")
- 
+    print(f"\n📊 Analyzing: {master_csv}")
+    analyze_statistical_significance(master_csv)

@@ -280,6 +280,24 @@ class BTreeOptimized(IndexStructure):
             'avg_keys_per_node': self._calculate_avg_keys_per_node(),
         }
     
+    def get_metrics(self) -> dict:
+        """
+        Get benchmark metrics for statistical analysis.
+        
+        B-Tree is an exact index structure, so accuracy is always 100%.
+        This method provides compatibility with the benchmark suite.
+        
+        Returns:
+            Dictionary of benchmark metrics
+        """
+        return {
+            'accuracy': 1.0,  # B-Tree always finds the exact position
+            'error_bound': 0,  # No prediction error
+            'mean_prediction_error': 0.0,
+            'fallback_rate': 0.0,  # Never needs fallback
+            'memory_mb': self.get_memory_usage() / (1024 * 1024),
+        }
+    
     def _calculate_avg_keys_per_node(self) -> float:
         """Calculate average number of keys per node."""
         if self.size == 0:

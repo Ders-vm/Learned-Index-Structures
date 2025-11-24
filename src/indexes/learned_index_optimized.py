@@ -155,6 +155,36 @@ class LearnedIndexOptimized(IndexStructure):
     # ===========================================================================
     # Utilities
     # ===========================================================================
+    def get_metrics(self):
+        """
+        Returns comprehensive metrics for benchmark runner.
+        
+        This method is called by run_benchmarks.py to collect all performance
+        metrics including accuracy, fallback rate, timing breakdown, and memory.
+        
+        Returns:
+            dict: All metrics needed for CSV output and analysis
+        """
+        return {
+            # Accuracy metrics
+            "accuracy": self.learned_metrics.get_prediction_accuracy(),
+            "error_bound": self.window,  # Window size is our error bound
+            "mean_prediction_error": 0.0,  # Not tracked in this implementation
+            "fallback_rate": self.learned_metrics.get_fallback_rate(),
+            "false_neg": self.learned_metrics.false_negatives,
+            "not_found": self.learned_metrics.not_found,
+            
+            # Timing breakdown
+            "fit_ms": self.fit_ms,
+            "local_avg_ns": self.time_local_ns / max(1, self.local_calls),
+            "fallback_avg_ns": self.time_fallback_ns / max(1, self.fallback_calls),
+            "local_calls": self.local_calls,
+            "fallback_calls": self.fallback_calls,
+            
+            # Memory
+            "memory_mb": self.get_memory_usage() / (1024 * 1024),
+        }
+    
     def get_timing_summary(self):
         """Returns timing breakdown used by benchmark runner."""
         return {

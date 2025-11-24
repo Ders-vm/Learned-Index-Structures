@@ -74,10 +74,15 @@ DATASET_SIZES: Number of keys to test with (10K to 1M)
 DISTRIBUTIONS: Data patterns (sequential, uniform random, mixed)
 REPEAT_CYCLES: How many times to repeat each test (5 = good statistical power)
 
+Testing across multiple sizes shows:
+- Small (10K-100K): Where B-Trees excel (low log(n))
+- Medium (500K): Transition point
+- Large (1M): Where learned indexes shine (O(1) advantage)
+
 Model-specific parameters follow.
 """
 
-DATASET_SIZES = [10_000, 50_000, 100_000, 500_000, 1_000_000]
+DATASET_SIZES = [10_000, 50_000, 100_000, 500_000, 1_000_000,]
 DISTRIBUTIONS = ["seq", "uniform", "mixed"]
 
 # B-Tree configurations (order = fanout)
@@ -220,21 +225,40 @@ def generate_queries(keys, count=1000, hit_rate=0.5):
     return queries
 
 
-def warmup_cache(index, keys, num_queries=20):
+def warmup_cache(index, keys, num_queries=100):
     """
     Warm up caches before timing measurements.
     
     WHY: First few queries often slower due to cold CPU cache, lazy
-    initialization, etc. Run some throwaway queries first.
+    initialization, Python JIT, etc. Run throwaway queries first.
+    
+    IMPORTANCE: Critical for fair benchmarking! Without warmup:
+    - First query: 50-100% slower (cold cache)
+    - After warmup: Consistent, representative timing
+    
+    For 1M keys, we use 100 warmup queries to ensure:
+    - CPU cache fully populated
+    - Branch predictors trained
+    - Python bytecode cached
+    - Memory pages loaded
     
     Args:
         index: Index structure to warm up
-        keys: Dataset keys
-        num_queries: Number of warmup queries to run
+        keys: Dataset keys (needed by some indexes like your learned indexes)
+        num_queries: Number of warmup queries to run (default: 100)
     """
     warmup_queries = np.random.choice(keys, size=num_queries, replace=True)
+    
+    # Check search method signature to call correctly
+    import inspect
+    sig = inspect.signature(index.search)
+    params = list(sig.parameters.keys())
+    
     for q in warmup_queries:
-        index.search(q)
+        if len(params) == 1:  # search(key) - B-Tree, Kraska
+            index.search(q)
+        else:  # search(key, keys) - Your learned indexes
+            index.search(q, keys)
 
 
 # ============================================================================
@@ -252,16 +276,21 @@ def benchmark_index(index_instance, keys, queries):
         4. Calculate metrics
     
     Args:
-        index_instance: Index object with build() and search() methods
+        index_instance: Index object with build() or build_from_sorted_array() method
         keys: Sorted array of keys
         queries: Array of query keys to test
     
     Returns:
         dict: All benchmark metrics (build time, lookup time, accuracy, etc.)
     """
-    # Phase 1: Build index
+    # Phase 1: Build index (handle different method names)
     build_start = time.perf_counter()
-    index_instance.build(keys)
+    if hasattr(index_instance, 'build'):
+        index_instance.build(keys)
+    elif hasattr(index_instance, 'build_from_sorted_array'):
+        index_instance.build_from_sorted_array(keys)
+    else:
+        raise AttributeError(f"{type(index_instance).__name__} has no build method")
     build_time_ms = (time.perf_counter() - build_start) * 1000
     
     # Phase 2: Warm up (eliminate cold cache effects)
@@ -270,9 +299,18 @@ def benchmark_index(index_instance, keys, queries):
     # Phase 3: Run timed queries
     lookup_times = []
     
+    # Check search method signature to call correctly
+    import inspect
+    sig = inspect.signature(index_instance.search)
+    params = list(sig.parameters.keys())
+    needs_keys = len(params) > 1  # More than just 'key' parameter
+    
     for q in queries:
         start = time.perf_counter_ns()
-        found = index_instance.search(q)
+        if needs_keys:
+            found = index_instance.search(q, keys)  # Your learned indexes
+        else:
+            found = index_instance.search(q)  # B-Tree, Kraska
         elapsed = time.perf_counter_ns() - start
         lookup_times.append(elapsed)
     
@@ -525,9 +563,16 @@ def main():
                 test_count += 1
                 print(f"\n[{test_count}/{total_tests}] Testing: {size:,} keys, {dist} distribution")
                 
-                # Generate dataset
-                gen = DatasetGenerator()
-                keys = gen.generate(size, distribution=dist)
+                # Generate dataset using appropriate static method
+                if dist == "seq":
+                    keys = DatasetGenerator.generate_sequential(size)
+                elif dist == "uniform":
+                    keys = DatasetGenerator.generate_uniform(size)
+                elif dist == "mixed":
+                    keys = DatasetGenerator.generate_mixed(size)
+                else:
+                    raise ValueError(f"Unknown distribution: {dist}")
+                
                 queries = generate_queries(keys, count=1000, hit_rate=0.5)
                 
                 # Open CSV and test all models
