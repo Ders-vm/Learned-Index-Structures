@@ -129,11 +129,11 @@ def get_display_name(row):
             return "Kraska Single"
         return None  # Filter out polynomial
     
-    # Kraska RMI: Keep only [1,100] (paper default)
+    # Kraska RMI: Keep only [1, 100] (paper default)
     elif model == 'kraska_rmi':
-        if '[1,100]' in params:
+        if '[1, 100]' in params:
             return "Kraska RMI"
-        return None  # Filter out [1,10] and [1,1000]
+        return None  # Filter out [1, 10] and [1, 1000]
     
     # Your Linear Adaptive: Keep all (it's your model!)
     elif model == 'linear_adaptive':
