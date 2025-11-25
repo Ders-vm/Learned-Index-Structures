@@ -82,7 +82,17 @@ Testing across multiple sizes shows:
 Model-specific parameters follow.
 """
 
-DATASET_SIZES = [10_000, 50_000, 100_000, 500_000, 1_000_000,]
+DATASET_SIZES = [
+    10_000,       # 10K
+    50_000,       # 50K
+    100_000,      # 100K
+    500_000,      # 500K
+    1_000_000,    # 1M
+    5_000_000,    # 5M
+    10_000_000,   # 10M
+    50_000_000,   # 50M
+    100_000_000   # 100M
+]
 DISTRIBUTIONS = ["seq", "uniform", "mixed"]
 
 # B-Tree configurations (order = fanout)
@@ -106,7 +116,7 @@ KRASKA_RMI_CONFIGS = [
 ]
 
 # Statistical parameters
-REPEAT_CYCLES = 5  # Number of times to repeat each test
+REPEAT_CYCLES = 15  # Number of times to repeat each test
 RESULTS_DIR = "results/benchmarks"
 
 
