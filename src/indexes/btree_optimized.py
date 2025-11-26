@@ -1,24 +1,14 @@
 """
-===============================================================================
-OPTIMIZED B-TREE IMPLEMENTATION
-===============================================================================
+Optimized B-Tree Implementation
+
 Memory-efficient B-Tree using __slots__ and NumPy arrays.
+Optimized for read-only workloads with bulk loading support.
 
-Key Optimizations:
-  • Uses __slots__ to reduce per-node memory by ~40%
-  • NumPy arrays for keys (faster search, less memory)
-  • Type hints throughout
-  • Input validation
-  • Implements IndexStructure interface
-
-Usage:
-    from btree_optimized import BTreeOptimized
-    
-    keys = np.sort(np.random.uniform(0, 1_000_000, 100_000))
-    tree = BTreeOptimized(order=128)
-    tree.build_from_sorted_array(keys)
-    found = tree.search(keys[100], keys)  # keys param for interface compat
-===============================================================================
+Features:
+- __slots__ for ~40% memory reduction
+- NumPy arrays for faster search
+- Bottom-up bulk loading
+- Configurable branch factor (order)
 """
 
 import numpy as np
@@ -347,21 +337,21 @@ if __name__ == "__main__":
     all_found = True
     for key in keys:
         if not tree.search(key):
-            print(f"  ❌ Failed to find existing key {key}")
+            print(f"  [ERROR] Failed to find existing key {key}")
             all_found = False
     
     if all_found:
-        print("  ✅ All existing keys found")
+        print("  [OK] All existing keys found")
     
     # Test non-existing keys
     none_found = True
     for key in [0.0, 3.0, 12.5, 50.0]:
         if tree.search(key):
-            print(f"  ❌ False positive for key {key}")
+            print(f"  [ERROR] False positive for key {key}")
             none_found = False
     
     if none_found:
-        print("  ✅ No false positives")
+        print("  [OK] No false positives")
     
     # Test 2: Performance comparison
     print("\n[Test 2] Performance Comparison")
@@ -409,7 +399,7 @@ if __name__ == "__main__":
     tree_empty.build_from_sorted_array(np.array([]))
     assert not tree_empty.search(5.0), "Empty tree test failed"
     assert tree_empty.get_height() == 0, "Empty tree height wrong"
-    print("  ✅ Empty tree handled correctly")
+    print("  [OK] Empty tree handled correctly")
     
     # Single element
     tree_single = BTreeOptimized(order=4)
@@ -417,7 +407,7 @@ if __name__ == "__main__":
     assert tree_single.search(42.0), "Single element not found"
     assert not tree_single.search(41.0), "False positive in single element"
     assert tree_single.get_height() == 1, "Single element height wrong"
-    print("  ✅ Single element handled correctly")
+    print("  [OK] Single element handled correctly")
     
     # Large order
     tree_large = BTreeOptimized(order=1000)
@@ -425,7 +415,7 @@ if __name__ == "__main__":
     tree_large.build_from_sorted_array(large_keys)
     sample = np.random.choice(large_keys, 100, replace=False)
     assert all(tree_large.search(k) for k in sample), "Large order test failed"
-    print("  ✅ Large order handled correctly")
+    print("  [OK] Large order handled correctly")
     
     # Test 4: Memory efficiency with __slots__
     print("\n[Test 4] Memory Efficiency")
@@ -444,10 +434,10 @@ if __name__ == "__main__":
     
     # With __slots__, we expect < 20 bytes per key for reasonable orders
     if bytes_per_key < 20:
-        print(f"  ✅ Memory efficiency good ({bytes_per_key:.1f} bytes/key)")
+        print(f"  [OK] Memory efficiency good ({bytes_per_key:.1f} bytes/key)")
     else:
-        print(f"  ⚠️  Memory efficiency could be better ({bytes_per_key:.1f} bytes/key)")
+        print(f"  [WARNING]  Memory efficiency could be better ({bytes_per_key:.1f} bytes/key)")
     
     print("\n" + "=" * 70)
-    print("ALL TESTS PASSED ✅")
+    print("ALL TESTS PASSED [OK]")
     print("=" * 70)

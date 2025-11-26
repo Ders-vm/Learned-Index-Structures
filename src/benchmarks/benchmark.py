@@ -1,46 +1,30 @@
 """
-================================================================================
-BENCHMARK RUNNER - Learned Index Structures
-================================================================================
+Learned Index Benchmark Suite
 
-PURPOSE:
-    Comprehensive benchmarking suite that compares your learned index 
-    implementations against the Kraska et al. baseline and traditional indexes.
+Comprehensive benchmarking framework comparing learned index implementations
+against traditional baselines (B-Tree) and Kraska et al. baselines.
 
-WHAT IT DOES:
-    1. Tests multiple index types across various dataset sizes and distributions
-    2. Measures lookup time, build time, memory usage, and accuracy
-    3. Runs multiple cycles for statistical validity
-    4. Outputs results to CSV for analysis and graphing
+Methodology:
+- Tests multiple dataset sizes and distributions
+- Measures lookup time, build time, memory usage, and accuracy
+- Multiple cycles for statistical validity
+- Outputs to CSV for analysis and visualization
 
-MODELS TESTED:
-    - Your implementations: Linear Fixed, Linear Adaptive
-    - Kraska baseline: Single-stage, RMI (Recursive Model Index)
-    - Traditional: B-Tree
+Models tested:
+- Linear Fixed Window (novel)
+- Linear Adaptive Window (novel)
+- Kraska Single-Stage (baseline)
+- Kraska RMI (baseline)
+- B-Tree (traditional baseline)
+
+Usage:
+    python src/benchmarks/benchmark.py
     
-HOW IT WORKS:
-    For each (dataset_size, distribution, model, configuration) combination:
-        1. Generate dataset (sorted keys)
-        2. Build index
-        3. Run warmup queries (eliminates cold cache)
-        4. Run test queries (500 existing + 500 random)
-        5. Record all metrics
-        6. Repeat for statistical confidence
-    
-OUTPUT:
+Output:
     results/benchmarks/run_YYYY-MM-DD_HH-MM-SS/master.csv
-    
-TYPICAL RUNTIME:
-    5-10 minutes for full benchmark (5 sizes × 3 distributions × ~30 configs × 5 cycles)
 
-USAGE:
-    python benchmarks/run_benchmarks.py
-    
-    Then generate graphs with:
-    python benchmarks/generate_graphs.py
-
-AUTHOR: Based on Kraska et al. "The Case for Learned Index Structures" (SIGMOD 2018)
-================================================================================
+Reference:
+    Kraska et al. "The Case for Learned Index Structures" (SIGMOD 2018)
 """
 
 import os
@@ -67,32 +51,11 @@ from src.indexes.learned_index_kraska import SingleStageLearnedIndex, RecursiveM
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
-"""
-Benchmark parameters that define what gets tested.
 
-DATASET_SIZES: Number of keys to test with (10K to 1M)
-DISTRIBUTIONS: Data patterns (sequential, uniform random, mixed)
-REPEAT_CYCLES: How many times to repeat each test (5 = good statistical power)
+# Dataset sizes: Keys to test (10K to 1M)
+DATASET_SIZES = [10_000, 50_000, 100_000, 500_000, 1_000_000]
 
-Testing across multiple sizes shows:
-- Small (10K-100K): Where B-Trees excel (low log(n))
-- Medium (500K): Transition point
-- Large (1M): Where learned indexes shine (O(1) advantage)
-
-Model-specific parameters follow.
-"""
-
-DATASET_SIZES = [
-    10_000,       # 10K
-    50_000,       # 50K
-    100_000,      # 100K
-    500_000,      # 500K
-    1_000_000,    # 1M
-    5_000_000,    # 5M
-    10_000_000,   # 10M
-    50_000_000,   # 50M
-    100_000_000   # 100M
-]
+# Distributions: Sequential, uniform random, mixed
 DISTRIBUTIONS = ["seq", "uniform", "mixed"]
 
 # B-Tree configurations (order = fanout)
@@ -105,6 +68,9 @@ FIXED_WINDOWS = [64, 128, 256, 512, 1024]
 ADAPTIVE_Q = [0.99, 0.995, 0.999]
 ADAPTIVE_MIN_W = [8, 16, 32]
 
+# PGM: Error bounds (realistic values only)
+PGM_EPSILONS = [64, 128, 256]
+
 # Kraska Single-Stage: Model types
 KRASKA_SINGLE_MODELS = ['linear', 'polynomial']
 
@@ -116,52 +82,35 @@ KRASKA_RMI_CONFIGS = [
 ]
 
 # Statistical parameters
-REPEAT_CYCLES = 15  # Number of times to repeat each test
+REPEAT_CYCLES = 5  # Number of times to repeat each test
 RESULTS_DIR = "results/benchmarks"
 
 
 # ============================================================================
 # CSV HEADER
 # ============================================================================
-"""
-Defines all metrics that get recorded for each test.
-
-Core metrics:
-    - build_ms: Time to construct the index (milliseconds)
-    - lookup_ns: Average time to find a key (nanoseconds)
-    - memory_mb: Memory footprint (megabytes)
-    
-Learned index metrics:
-    - accuracy: Fraction of predictions within error bound
-    - error_bound: Maximum prediction error (Kraska metric)
-    - fallback_rate: Fraction requiring full search
-    
-Operational metrics:
-    - local_calls: Searches in predicted window
-    - fallback_calls: Full binary searches needed
-"""
 
 CSV_HEADER = [
-    "timestamp",              # When test was run
-    "cycle",                  # Repetition number (1-5)
-    "dataset_size",           # Number of keys
-    "distribution",           # seq/uniform/mixed
-    "model",                  # Index type
-    "params",                 # Model configuration
-    "build_ms",               # Build time
-    "lookup_ns",              # Lookup time
-    "accuracy",               # Prediction accuracy
-    "error_bound",            # Max prediction error (Kraska)
-    "mean_prediction_error",  # Avg prediction error (Kraska)
-    "fallback_rate",          # Full search rate
-    "false_neg",              # Missed existing keys
-    "not_found",              # Missing keys found
-    "local_avg_ns",           # Avg local search time
-    "fallback_avg_ns",        # Avg fallback time
-    "local_calls",            # Count of local searches
-    "fallback_calls",         # Count of fallbacks
-    "fit_ms",                 # Model training time
-    "memory_mb",              # Memory usage
+    "timestamp",
+    "cycle",
+    "dataset_size",
+    "distribution",
+    "model",
+    "params",
+    "build_ms",
+    "lookup_ns",
+    "accuracy",
+    "error_bound",
+    "mean_prediction_error",
+    "fallback_rate",
+    "false_neg",
+    "not_found",
+    "local_avg_ns",
+    "fallback_avg_ns",
+    "local_calls",
+    "fallback_calls",
+    "fit_ms",
+    "memory_mb",
 ]
 
 
@@ -170,15 +119,7 @@ CSV_HEADER = [
 # ============================================================================
 
 def setup_results_folder():
-    """
-    Create timestamped results folder.
-    
-    Structure:
-        results/benchmarks/run_YYYY-MM-DD_HH-MM-SS/master.csv
-    
-    Returns:
-        tuple: (run_folder_path, master_csv_path)
-    """
+    """Create timestamped results folder and initialize CSV."""
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     run_name = f"run_{timestamp}"
     run_path = os.path.join(RESULTS_DIR, run_name)
@@ -388,7 +329,7 @@ def test_btree(csv_writer, cycle, size, dist, keys, queries):
             result['memory_mb'],
         ]
         csv_writer.writerow(row)
-        print(f"    ✓ B-Tree (order={order}): {result['lookup_ns']:.1f} ns")
+        print(f"    [DONE] B-Tree (order={order}): {result['lookup_ns']:.1f} ns")
 
 
 def test_linear_fixed(csv_writer, cycle, size, dist, keys, queries):
@@ -420,7 +361,7 @@ def test_linear_fixed(csv_writer, cycle, size, dist, keys, queries):
             result['memory_mb'],
         ]
         csv_writer.writerow(row)
-        print(f"    ✓ Linear Fixed (W={window}): {result['lookup_ns']:.1f} ns")
+        print(f"    [DONE] Linear Fixed (W={window}): {result['lookup_ns']:.1f} ns")
 
 
 def test_linear_adaptive(csv_writer, cycle, size, dist, keys, queries):
@@ -453,7 +394,7 @@ def test_linear_adaptive(csv_writer, cycle, size, dist, keys, queries):
                 result['memory_mb'],
             ]
             csv_writer.writerow(row)
-            print(f"    ✓ Linear Adaptive (q={q}, min_w={min_w}): {result['lookup_ns']:.1f} ns")
+            print(f"    [DONE] Linear Adaptive (q={q}, min_w={min_w}): {result['lookup_ns']:.1f} ns")
 
 
 def test_kraska_single(csv_writer, cycle, size, dist, keys, queries):
@@ -485,7 +426,7 @@ def test_kraska_single(csv_writer, cycle, size, dist, keys, queries):
             result['memory_mb'],
         ]
         csv_writer.writerow(row)
-        print(f"    ✓ Kraska Single ({model_type}): {result['lookup_ns']:.1f} ns")
+        print(f"    [DONE] Kraska Single ({model_type}): {result['lookup_ns']:.1f} ns")
 
 
 def test_kraska_rmi(csv_writer, cycle, size, dist, keys, queries):
@@ -517,7 +458,7 @@ def test_kraska_rmi(csv_writer, cycle, size, dist, keys, queries):
             result['memory_mb'],
         ]
         csv_writer.writerow(row)
-        print(f"    ✓ Kraska RMI {stages}: {result['lookup_ns']:.1f} ns")
+        print(f"    [DONE] Kraska RMI {stages}: {result['lookup_ns']:.1f} ns")
 
 
 # ============================================================================
@@ -541,19 +482,19 @@ def main():
     measurements and testing across different data patterns and scales.
     """
     print("\n" + "="*70)
-    print("📊 BENCHMARK RUNNER")
+    print("[BENCHMARK] BENCHMARK RUNNER")
     print("="*70)
     
     # Setup results folder
     run_path, master_csv = setup_results_folder()
     
-    print(f"\n🚀 Benchmark Runner Started")
-    print(f"📁 Saving results: {run_path}")
-    print(f"📄 Master CSV: {master_csv}")
+    print(f"\n[START] Benchmark Runner Started")
+    print(f"[FOLDER] Saving results: {run_path}")
+    print(f"[FILE] Master CSV: {master_csv}")
     print(f"\nModels tested:")
     print(f"  • Your models (Linear Fixed, Linear Adaptive)")
     print(f"  • Kraska models (Single-stage, RMI)")
-    print(f"  • Baselines (B-Tree)")
+    print(f"  • Baselines (B-Tree, PGM)")
     print()
     
     # Main benchmark loop
@@ -562,7 +503,7 @@ def main():
     
     for cycle in range(1, REPEAT_CYCLES + 1):
         print(f"\n{'='*70}")
-        print(f"🔄 CYCLE {cycle}/{REPEAT_CYCLES}")
+        print(f"[CYCLE] CYCLE {cycle}/{REPEAT_CYCLES}")
         print(f"{'='*70}")
         
         for size in DATASET_SIZES:
@@ -593,10 +534,10 @@ def main():
                     test_kraska_rmi(writer, cycle, size, dist, keys, queries)
     
     print("\n" + "="*70)
-    print("✅ BENCHMARK COMPLETE!")
+    print("[OK] BENCHMARK COMPLETE!")
     print("="*70)
-    print(f"\n📊 Results saved to: {master_csv}")
-    print(f"\n📈 Next steps:")
+    print(f"\n[BENCHMARK] Results saved to: {master_csv}")
+    print(f"\n[GRAPH] Next steps:")
     print(f"   1. Generate graphs: python benchmarks/generate_graphs.py")
     print(f"   2. Statistical analysis: python benchmarks/statistical_analysis.py")
     print()

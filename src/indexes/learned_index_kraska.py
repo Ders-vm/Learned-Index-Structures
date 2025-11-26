@@ -1,25 +1,14 @@
 """
-===============================================================================
-LEARNED INDEX IMPLEMENTATION - KRASKA ET AL. SPECIFICATION
-===============================================================================
-Implementation following "The Case for Learned Index Structures" (Kraska et al., 2018)
+Learned Index Implementation - Kraska et al. Baseline
 
-Key concepts from the paper:
-1. Replace index structures with learned models (CDF approximation)
-2. Recursive Model Index (RMI) - staged models
-3. Hybrid approach - models + search in bounded error region
-4. Error bounds determine search window
+Implementation of learned index structures from Kraska et al. (2018):
+- Single-stage learned index (baseline)
+- Recursive Model Index (RMI)
+- Error-bounded correction search
 
-This implementation provides:
-- Single-stage learned index (baseline from paper)
-- Multi-stage RMI (main contribution of paper)  
-- Proper error bounds and correction mechanism
-- Last-mile search optimization
-
-References:
-- Kraska, T., et al. (2018). "The Case for Learned Index Structures."
-  SIGMOD '18. https://arxiv.org/abs/1712.01208
-===============================================================================
+Reference:
+    Kraska, T., et al. (2018). "The Case for Learned Index Structures."
+    SIGMOD '18. https://arxiv.org/abs/1712.01208
 """
 
 import numpy as np

@@ -24,16 +24,17 @@
 import sys, os
 
 # Allow for absolute imported paths
-project_root = project_root = os.path.abspath(os.path.join(os.getcwd(), '..', '..'))
-os.path.abspath
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if project_root not in sys.path:
-    sys.path.append(project_root)
+    sys.path.insert(0, project_root)
 
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-from src.indexes.btree import BTree
-from src.indexes.learned_index import LearnedIndex
+from src.indexes.btree_optimized import BTreeOptimized as BTree
+from src.indexes.learned_index_optimized import LearnedIndexOptimized as LearnedIndex
 from src.indexes.linear_index_adaptive import LinearIndexAdaptive
 from src.indexes.rmi import RecursiveModelIndex
 from src.utils.data_loader import DatasetGenerator
@@ -43,6 +44,10 @@ from src.utils.data_loader import DatasetGenerator
 
 # Same size for the datasets to keep consistency
 DATASET_SIZE = 100_000
+
+# Output directory for plots
+OUTPUT_DIR = os.path.join(project_root, 'graphs')
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 # %% [markdown]
@@ -85,7 +90,7 @@ def plot_uniform():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid(alpha=0.3)
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, "plot_uniform_1.png"), dpi=150, bbox_inches="tight"); plt.close()
 
 plot_uniform()
 
@@ -135,7 +140,7 @@ def plot_sequential():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid(alpha=0.3)
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, "plot_sequential_1.png"), dpi=150, bbox_inches="tight"); plt.close()
 
 plot_sequential()
 
@@ -185,7 +190,7 @@ def plot_mixed():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid(alpha=0.3)
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, "plot_mixed_1.png"), dpi=150, bbox_inches="tight"); plt.close()
 
 plot_mixed()
 
@@ -252,7 +257,7 @@ def heatmap():
     cbar.set_label('Accuracy (%)', rotation=270, labelpad=20)
     
     plt.tight_layout()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, "plot_mixed_2.png"), dpi=150, bbox_inches="tight"); plt.close()
 
 heatmap()
 
@@ -329,7 +334,7 @@ def time_plot():
     ax.set_xticklabels([r[0] for r in results])
     ax.legend()
     plt.tight_layout()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, "plot_mixed_3.png"), dpi=150, bbox_inches="tight"); plt.close()
 
 time_plot()
         

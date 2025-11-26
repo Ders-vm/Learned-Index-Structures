@@ -24,14 +24,15 @@
 import sys, os
 
 # Allow for absolute imported paths
-project_root = project_root = os.path.abspath(os.path.join(os.getcwd(), '..', '..'))
-os.path.abspath
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if project_root not in sys.path:
-    sys.path.append(project_root)
+    sys.path.insert(0, project_root)
 
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 import numpy as np
-from src.indexes.learned_index import LearnedIndex
+from src.indexes.learned_index_optimized import LearnedIndexOptimized as LearnedIndex
 from src.utils.data_loader import DatasetGenerator
 
 # %%
@@ -39,6 +40,10 @@ from src.utils.data_loader import DatasetGenerator
 
 # Same size for the datasets to keep consistency
 DATASET_SIZE = 100_000
+
+# Output directory for plots
+OUTPUT_DIR = os.path.join(project_root, 'graphs')
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 # %% [markdown]
@@ -63,7 +68,8 @@ def plot_uniform():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, 'learned_index_uniform.png'), dpi=150, bbox_inches='tight')
+    plt.close()
 plot_uniform()
 
 
@@ -92,7 +98,8 @@ def plot_sequential():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, 'learned_index_sequential.png'), dpi=150, bbox_inches='tight')
+    plt.close()
 plot_sequential()
 
 
@@ -124,7 +131,8 @@ def plot_mixed():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, 'learned_index_mixed.png'), dpi=150, bbox_inches='tight')
+    plt.close()
 plot_mixed()
 
 
@@ -154,7 +162,8 @@ def plot_all_datasets():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, 'all_datasets_distribution.png'), dpi=150, bbox_inches='tight')
+    plt.close()
     
     # Print the stats
     print("\nDataset Key Ranges:")
@@ -221,6 +230,7 @@ def heatmap():
     cbar.set_label('Accuracy (%)', rotation=270, labelpad=20)
     
     plt.tight_layout()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, 'accuracy_heatmap.png'), dpi=150, bbox_inches='tight')
+    plt.close()
 
 heatmap()

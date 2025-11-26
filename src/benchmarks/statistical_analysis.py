@@ -19,7 +19,7 @@ def analyze_statistical_significance(master_csv_path):
 
     # Handle missing accuracy column
     if "accuracy" not in df.columns:
-        print("\n⚠️  'accuracy' column not found in CSV — filling with 0.0")
+        print("\n[WARNING]  'accuracy' column not found in CSV — filling with 0.0")
         df["accuracy"] = 0.0
     else:
         # Replace non-numeric or NaN accuracy values with 0.0
@@ -55,7 +55,7 @@ def analyze_statistical_significance(master_csv_path):
     # Save summary
     output_path = master_csv_path.replace("master.csv", "lookup_summary.csv")
     stats_df.to_csv(output_path, index=False)
-    print(f"\n✓ Summary saved to: {output_path}")
+    print(f"\n[DONE] Summary saved to: {output_path}")
 
     # Focus on largest dataset (usually 1M keys)
     max_size = stats_df["dataset_size"].max()
@@ -84,7 +84,7 @@ def analyze_statistical_significance(master_csv_path):
     models = sorted(uniform_large["model"].unique())
 
     if len(models) < 2:
-        print("\n⚠️  Not enough models for significance testing.")
+        print("\n[WARNING]  Not enough models for significance testing.")
     else:
         print(f"{'Comparison':<40} {'Faster Model':<20} {'Speedup':>8} {'p-value':>10} {'Sig':>5}")
         print("-" * 85)
@@ -121,9 +121,9 @@ def analyze_statistical_significance(master_csv_path):
         for _, row in high_var.iterrows():
             print(f"{row['model']:<20} {row['distribution']:<12} {row['lookup_cv']:>8.2%}")
     else:
-        print("✓ All variance levels acceptable (CV < 10%)")
+        print("[DONE] All variance levels acceptable (CV < 10%)")
 
-    print("\n✅ Analysis complete!\n")
+    print("\n[OK] Analysis complete!\n")
     return stats_df
 
 
@@ -145,11 +145,11 @@ if __name__ == "__main__":
                 latest = max(subdirs, key=os.path.getmtime)
                 master_csv = os.path.join(latest, "master.csv")
             else:
-                print("❌ No benchmark results found")
+                print("[ERROR] No benchmark results found")
                 sys.exit(1)
         else:
-            print("❌ results/benchmarks directory not found")
+            print("[ERROR] results/benchmarks directory not found")
             sys.exit(1)
 
-    print(f"\n📊 Analyzing: {master_csv}")
+    print(f"\n[BENCHMARK] Analyzing: {master_csv}")
     analyze_statistical_significance(master_csv)

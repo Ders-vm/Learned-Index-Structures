@@ -17,8 +17,8 @@ Or with coverage: pytest test_indexes.py -v --cov
 import pytest
 import numpy as np
 import time
-from src.indexes.learned_index_optimized import LearnedIndexOptimized
-from src.indexes.btree_optimized import BTreeOptimized
+from learned_index_optimized import LearnedIndexOptimized
+from btree_optimized import BTreeOptimized
 
 
 class TestLearnedIndexOptimized:

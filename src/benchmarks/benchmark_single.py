@@ -1,72 +1,30 @@
 """
 ===============================================================================
-QUICK BENCHMARK UTILITY - Single Dataset Testing
+BENCHMARKING MODULE
 ===============================================================================
-This is a STANDALONE utility for quick benchmarking of a single dataset.
+This module measures the performance of different indexing structures.
 
-PURPOSE:
-    Fast, simple benchmarking for quick tests without the full benchmark suite.
-    Useful for development, debugging, and quick performance checks.
-
-RELATIONSHIP TO MAIN WORKFLOW:
-    - Main workflow: benchmarks/benchmark.py (comprehensive, multiple datasets)
-    - This utility: Quick single-dataset tests (fast, simple)
-
-WHAT IT DOES:
+The Benchmark class provides utilities to:
     • Measure build time (ms)
     • Measure average lookup time (ns)
     • Estimate memory usage (MB)
     • Compare B-Tree performance across different orders (page sizes)
-    • Compare Learned Index across different window sizes
 
-USAGE:
-    from src.benchmarks.benchmark_single import Benchmark
+It can be expanded later to include:
+    • Learned index models (Linear Regression, Recursive Model Index)
+    • CSV result logging
+    • Matplotlib visualization for graphs
+
+Usage:
+    from src.benchmarks.benchmark_runner import Benchmark
     from src.utils.data_loader import DatasetGenerator
 
-    # Generate data
     keys = DatasetGenerator.generate_uniform(10000)
-    
-    # Run quick benchmark
     Benchmark.run("Uniform (10k)", keys)
 
-OUTPUT EXAMPLE:
-    ======================================================================
-    Dataset: Uniform (10k) — 10,000 keys
-    ======================================================================
-
-    -- B-Tree (Optimized) --
-    Order 32  | Build:     2.34 ms | Lookup:    45.32 ns | Mem:  0.156 MB
-    Order 64  | Build:     1.89 ms | Lookup:    38.21 ns | Mem:  0.203 MB
-    ...
-
-    -- Learned Index (Optimized) --
-    Window 64   | Build:     0.52 ms | Lookup:    12.45 ns | Mem:  0.001 MB
-    Window 128  | Build:     0.51 ms | Lookup:    14.23 ns | Mem:  0.001 MB
-    ...
-
-WHEN TO USE:
-    ✓ Quick tests during development
-    ✓ Debugging specific configurations
-    ✓ Testing on custom datasets
-    ✓ Interactive experimentation
-    
-    ✗ DON'T use for research/publications (use benchmark.py instead)
-    ✗ DON'T use for statistical analysis (no repetition/cycles)
-
-COMPARISON TO FULL BENCHMARK:
-    benchmark.py:
-        - Tests 5 dataset sizes × 3 distributions × 5 cycles
-        - ~30 model configurations
-        - Outputs detailed CSV for analysis
-        - Takes 5-10 minutes
-        - Statistical validity
-    
-    benchmark_single.py (this file):
-        - Tests 1 dataset × 1 run
-        - Quick console output
-        - Takes seconds
-        - Good for development
-
+Next Steps:
+    - Add automatic result saving to CSV.
+    - Plot comparisons of build/lookup time across datasets.
 ===============================================================================
 """
 

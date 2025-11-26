@@ -24,11 +24,12 @@
 import sys, os
 
 # Allow for absolute imported paths
-project_root = project_root = os.path.abspath(os.path.join(os.getcwd(), '..', '..'))
-os.path.abspath
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if project_root not in sys.path:
-    sys.path.append(project_root)
+    sys.path.insert(0, project_root)
 
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 import numpy as np
 from src.indexes.linear_index_adaptive import LinearIndexAdaptive
@@ -40,6 +41,10 @@ from src.utils.data_loader import DatasetGenerator
 
 # Same size for the datasets to keep consistency
 DATASET_SIZE = 100_000
+
+# Output directory for plots
+OUTPUT_DIR = os.path.join(project_root, 'graphs')
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 # %% [markdown]
@@ -64,7 +69,7 @@ def plot_uniform():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_plot_{}.png".format(__line__)), dpi=150, bbox_inches="tight"); plt.close()
 plot_uniform()
 
 
@@ -94,7 +99,7 @@ def plot_sequential():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_plot_{}.png".format(__line__)), dpi=150, bbox_inches="tight"); plt.close()
 plot_sequential()
 
 
@@ -125,7 +130,7 @@ def plot_mixed():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_plot_{}.png".format(__line__)), dpi=150, bbox_inches="tight"); plt.close()
 plot_mixed()
 
 
@@ -191,6 +196,6 @@ def heatmap():
     cbar.set_label('Accuracy (%)', rotation=270, labelpad=20)
     
     plt.tight_layout()
-    plt.show()
+    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_plot_{}.png".format(__line__)), dpi=150, bbox_inches="tight"); plt.close()
 
 heatmap()
