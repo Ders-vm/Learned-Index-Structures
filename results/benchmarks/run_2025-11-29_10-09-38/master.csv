@@ -1,0 +1,3 @@
+timestamp,cycle,dataset_size,distribution,model,params,build_ms,lookup_ns,search_accuracy,searches_correct,searches_incorrect,searches_counted,accuracy,error_bound,mean_prediction_error,fallback_rate,false_neg,not_found,local_avg_ns,fallback_avg_ns,local_calls,fallback_calls,fit_ms,memory_mb
+2025-11-29T10:09:39.154042,1,1000000,s  eq,btree,order=128,40.38520000176504,6758.9,1.0,1000,0,1000,1.0,0,0.0,0.0,0,0,,,0,0,,8.840621948242188
+2025-11-29T10:09:39.324284,1,1000000,s  eq,linear_fixed,window=512,40.83250000257976,8062.0,1.0,1000,0,1000,0.000980392156862745,512,0.0,0.9990196078431373,519,500,1325.7843137254902,1332.3846908734054,1020,1019,38.590800017118454,0.00023651123046875

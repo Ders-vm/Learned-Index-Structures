@@ -69,7 +69,7 @@ def plot_uniform():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid()
-    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_plot_{}.png".format(__line__)), dpi=150, bbox_inches="tight"); plt.close()
+    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_uniform.png"), dpi=150, bbox_inches="tight"); plt.close()
 plot_uniform()
 
 
@@ -99,7 +99,7 @@ def plot_sequential():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid()
-    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_plot_{}.png".format(__line__)), dpi=150, bbox_inches="tight"); plt.close()
+    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_uniform.png"), dpi=150, bbox_inches="tight"); plt.close()
 plot_sequential()
 
 
@@ -130,7 +130,7 @@ def plot_mixed():
     plt.ylabel('Positions')
     plt.legend()
     plt.grid()
-    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_plot_{}.png".format(__line__)), dpi=150, bbox_inches="tight"); plt.close()
+    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_uniform.png"), dpi=150, bbox_inches="tight"); plt.close()
 plot_mixed()
 
 
@@ -196,6 +196,6 @@ def heatmap():
     cbar.set_label('Accuracy (%)', rotation=270, labelpad=20)
     
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_plot_{}.png".format(__line__)), dpi=150, bbox_inches="tight"); plt.close()
+    plt.savefig(os.path.join(OUTPUT_DIR, "adaptive_uniform.png"), dpi=150, bbox_inches="tight"); plt.close()
 
 heatmap()

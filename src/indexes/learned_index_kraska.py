@@ -144,7 +144,7 @@ class SingleStageLearnedIndex:
         errors = np.array(errors)
         
         # From paper: Use max error as bound
-        # In practice, can use 99th percentile for robustness
+        # Must use max error to guarantee all keys can be found!
         max_error = int(np.max(errors))
         p99_error = int(np.percentile(errors, 99))
         
@@ -153,7 +153,7 @@ class SingleStageLearnedIndex:
         self.metrics.max_prediction_error = max_error
         self.metrics.min_prediction_error = int(np.min(errors))
         
-        return p99_error  # Use 99th percentile for robustness
+        return max_error  # Use max to guarantee all keys are findable
     
     def build(self, keys: np.ndarray) -> None:
         """
@@ -432,7 +432,7 @@ class RecursiveModelIndex:
         self.metrics.mean_prediction_error = np.mean(errors)
         self.metrics.max_prediction_error = int(np.max(errors))
         
-        return int(np.percentile(errors, 99))
+        return int(np.max(errors))  # Use max to guarantee correctness
     
     def search(self, key: float) -> Tuple[bool, int]:
         """
