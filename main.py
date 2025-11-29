@@ -14,8 +14,8 @@ RUN_GRAPHS = True             # Generate performance graphs from benchmark data
 RUN_EXPLORATORY_PLOTS = False # Generate exploratory plots (uses test data, not benchmark results)
 
 # Benchmark settings
-DATASET_SIZES = [10_000_000]              # Number of keys to test [100_000, 1_000_000, 100_000_000]
-DISTRIBUTIONS = ["s  eq", "uniform", "mixed"]  # Data patterns
+DATASET_SIZES = [10_000, 100_000]              # Number of keys to test [100_000, 1_000_000, 100_000_000]
+DISTRIBUTIONS = ["seq", "uniform", "mixed"]  # Data patterns
 REPEAT_CYCLES = 1                        # Times to repeat (higher = better statistics)
 
 # ACCURACY VALIDATION (Critical!)
@@ -27,9 +27,9 @@ PENALTY_MULTIPLIER = 10.0      # If penalty mode, multiply lookup time by this
 
 # Models to test
 BTREE_ORDERS = [128]                    # B-Tree configurations
-FIXED_WINDOWS = [2048]                   # Linear Fixed window sizes
+FIXED_WINDOWS = [512]                   # Linear Fixed window sizes  
 ADAPTIVE_Q = [0.99]                     # Linear Adaptive quantiles
-ADAPTIVE_MIN_W = [64]                   # Linear Adaptive min windows
+ADAPTIVE_MIN_W = [16]                   # Linear Adaptive min windows
 KRASKA_SINGLE_MODELS = ['linear']       # Kraska single-stage
 KRASKA_RMI_CONFIGS = [[1, 100]]         # Kraska RMI [stages, experts]
 
@@ -52,6 +52,10 @@ if PROJECT_ROOT not in sys.path:
 import time
 import csv
 import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 from datetime import datetime
 
 # Imports
@@ -397,204 +401,198 @@ def run_analysis(master_csv):
 
 
 def run_graphs(master_csv):
-    """Generate graphs from benchmark data."""
+    """Generate all plots from CSV file."""
+    
     print_header("GENERATING GRAPHS FROM BENCHMARK DATA")
-    
-    import pandas as pd
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-    
-    df = pd.read_csv(master_csv)
-    
-    # Get largest dataset
-    max_size = df['dataset_size'].max()
-    df_large = df[df['dataset_size'] == max_size]
-    
-    # Group and average
-    summary = df_large.groupby(['model', 'params', 'distribution']).agg({
-        'lookup_ns': 'mean',
-        'build_ms': 'mean',
-        'memory_mb': 'mean',
-        'search_accuracy': 'mean',
-        'accuracy': 'mean'  # prediction accuracy
-    }).reset_index()
-    
-    # Convert ns to µs
-    summary['lookup_us'] = summary['lookup_ns'] / 1000
-    
-    print(f"\nUsing data from {max_size:,} keys")
-    print(f"Plotting {len(summary)} configurations")
-    
-    # Format size for folder name (e.g., 1M, 10M, 100M)
-    if max_size >= 1_000_000:
-        size_str = f"{max_size // 1_000_000}M"
-    elif max_size >= 1_000:
-        size_str = f"{max_size // 1_000}K"
-    else:
-        size_str = str(max_size)
-    
-    # Create size-specific folder
-    size_graphs_dir = os.path.join(GRAPHS_DIR, size_str)
-    os.makedirs(size_graphs_dir, exist_ok=True)
-    print(f"Saving to: {size_graphs_dir}/")
+
+    print_header("GENERATING GRAPHS FROM BENCHMARK DATA")
+    print(f"\nUsing: {master_csv}")
     print()
     
-    colors = {'btree': '#95A5A6', 'kraska_single': '#E74C3C', 
-              'kraska_rmi': '#3498DB', 'linear_fixed': '#1ABC9C',
-              'linear_adaptive': '#2ECC71'}
+    # Read data
+    df = pd.read_csv(master_csv)
     
-    # Plot for each distribution
-    for dist in DISTRIBUTIONS:
-        dist_data = summary[summary['distribution'] == dist]
+    # Get all dataset sizes
+    sizes = sorted(df['dataset_size'].unique())
+    
+    print(f"Found {len(sizes)} dataset sizes: {', '.join([f'{s:,}' for s in sizes])}")
+    print()
+    
+    colors = {
+        'btree': '#95A5A6',
+        'kraska_single': '#E74C3C', 
+        'kraska_rmi': '#3498DB',
+        'linear_fixed': '#1ABC9C',
+        'linear_adaptive': '#2ECC71'
+    }
+    
+    # Generate plots for each dataset size
+    for size in sizes:
+        df_size = df[df['dataset_size'] == size]
         
-        if len(dist_data) == 0:
-            continue
+        # Group and average across cycles
+        summary = df_size.groupby(['model', 'params', 'distribution']).agg({
+            'lookup_ns': 'mean',
+            'build_ms': 'mean',
+            'memory_mb': 'mean',
+            'search_accuracy': 'mean',
+            'accuracy': 'mean'
+        }).reset_index()
         
-        # === LOOKUP TIME GRAPH ===
-        plt.figure(figsize=(12, 6))
-        x_pos = np.arange(len(dist_data))
+        summary['lookup_us'] = summary['lookup_ns'] / 1000
         
-        bars = plt.bar(x_pos, dist_data['lookup_us'], 
-                      color=[colors.get(m, '#7F8C8D') for m in dist_data['model']])
+        # Format size for folder name
+        if size >= 1_000_000:
+            size_str = f"{size // 1_000_000}M"
+        elif size >= 1_000:
+            size_str = f"{size // 1_000}K"
+        else:
+            size_str = str(size)
         
-        plt.xlabel('Index Configuration')
-        plt.ylabel('Lookup Time (µs)')
-        plt.title(f'Lookup Performance - {dist.capitalize()} Distribution ({size_str} keys)')
-        plt.xticks(x_pos, [f"{row['model']}\n{row['params']}" 
-                           for _, row in dist_data.iterrows()], rotation=45, ha='right')
-        plt.tight_layout()
+        # Create size-specific folder
+        size_graphs_dir = os.path.join(GRAPHS_DIR, size_str)
+        os.makedirs(size_graphs_dir, exist_ok=True)
         
-        filename = os.path.join(size_graphs_dir, f'lookup_time_{dist}.png')
-        plt.savefig(filename, dpi=150, bbox_inches='tight')
-        plt.close()
-        print(f"  Saved: {filename}")
+        print(f"Generating plots for {size:,} keys → {size_graphs_dir}/")
         
-        # === PREDICTION ACCURACY GRAPH ===
-        plt.figure(figsize=(12, 6))
-        x_pos = np.arange(len(dist_data))
+        # === 1. LOOKUP TIME PER DISTRIBUTION ===
+        for dist in DISTRIBUTIONS:
+            dist_data = summary[summary['distribution'] == dist]
+            
+            if len(dist_data) == 0:
+                continue
+            
+            plt.figure(figsize=(12, 6))
+            x_pos = np.arange(len(dist_data))
+            
+            bars = plt.bar(x_pos, dist_data['lookup_us'], 
+                          color=[colors.get(m, '#7F8C8D') for m in dist_data['model']])
+            
+            plt.xlabel('Index Configuration', fontsize=12)
+            plt.ylabel('Lookup Time (µs)', fontsize=12)
+            plt.title(f'Lookup Performance - {dist.capitalize()} Distribution ({size_str} keys)', 
+                     fontsize=14, fontweight='bold')
+            plt.xticks(x_pos, [f"{row['model']}\n{row['params']}" 
+                               for _, row in dist_data.iterrows()], rotation=45, ha='right')
+            plt.grid(axis='y', alpha=0.3)
+            plt.tight_layout()
+            
+            filename = os.path.join(size_graphs_dir, f'lookup_time_{dist}.png')
+            plt.savefig(filename, dpi=150, bbox_inches='tight')
+            plt.close()
+            print(f"  ✅ lookup_time_{dist}.png")
         
-        # Convert to percentage
-        accuracy_pct = dist_data['accuracy'] * 100
+        # === 2. PREDICTION ACCURACY PER DISTRIBUTION ===
+        for dist in DISTRIBUTIONS:
+            dist_data = summary[summary['distribution'] == dist]
+            
+            if len(dist_data) == 0:
+                continue
+            
+            plt.figure(figsize=(12, 6))
+            x_pos = np.arange(len(dist_data))
+            
+            accuracy_pct = dist_data['accuracy'] * 100
+            
+            bars = plt.bar(x_pos, accuracy_pct,
+                          color=[colors.get(m, '#7F8C8D') for m in dist_data['model']])
+            
+            plt.xlabel('Index Configuration', fontsize=12)
+            plt.ylabel('Prediction Accuracy (%)', fontsize=12)
+            plt.title(f'Prediction Accuracy - {dist.capitalize()} Distribution ({size_str} keys)',
+                     fontsize=14, fontweight='bold')
+            plt.xticks(x_pos, [f"{row['model']}\n{row['params']}" 
+                               for _, row in dist_data.iterrows()], rotation=45, ha='right')
+            plt.ylim(0, 105)
+            plt.grid(axis='y', alpha=0.3)
+            plt.tight_layout()
+            
+            filename = os.path.join(size_graphs_dir, f'accuracy_{dist}.png')
+            plt.savefig(filename, dpi=150, bbox_inches='tight')
+            plt.close()
+            print(f"  ✅ accuracy_{dist}.png")
         
-        bars = plt.bar(x_pos, accuracy_pct,
-                      color=[colors.get(m, '#7F8C8D') for m in dist_data['model']])
+        # === 3. BUILD TIME COMPARISON ===
+        plt.figure(figsize=(14, 6))
         
-        plt.xlabel('Index Configuration')
-        plt.ylabel('Prediction Accuracy (%)')
-        plt.title(f'Prediction Accuracy - {dist.capitalize()} Distribution ({size_str} keys)')
-        plt.xticks(x_pos, [f"{row['model']}\n{row['params']}" 
-                           for _, row in dist_data.iterrows()], rotation=45, ha='right')
-        plt.ylim(0, 105)  # 0-100% with some headroom
+        # Get unique models
+        models = summary['model'].unique()
+        x_labels = []
+        
+        for i, dist in enumerate(DISTRIBUTIONS):
+            dist_data = summary[summary['distribution'] == dist]
+            if len(dist_data) == 0:
+                continue
+            
+            x_pos = np.arange(len(dist_data)) + i * 0.25
+            plt.bar(x_pos, dist_data['build_ms'],
+                   width=0.25, label=dist.capitalize(),
+                   alpha=0.8)
+            
+            if i == 0:
+                x_labels = [f"{row['model']}" for _, row in dist_data.iterrows()]
+        
+        plt.xlabel('Index Configuration', fontsize=12)
+        plt.ylabel('Build Time (ms)', fontsize=12)
+        plt.title(f'Index Build Time Comparison ({size_str} keys)',
+                 fontsize=14, fontweight='bold')
+        plt.legend(fontsize=11)
+        if x_labels:
+            plt.xticks(np.arange(len(x_labels)) + 0.25, x_labels, rotation=45, ha='right')
         plt.grid(axis='y', alpha=0.3)
         plt.tight_layout()
         
-        filename = os.path.join(size_graphs_dir, f'accuracy_{dist}.png')
+        filename = os.path.join(size_graphs_dir, f'build_time.png')
         plt.savefig(filename, dpi=150, bbox_inches='tight')
         plt.close()
-        print(f"  Saved: {filename}")
-    
-    # === BUILD TIME COMPARISON ===
-    plt.figure(figsize=(14, 6))
-    
-    for i, dist in enumerate(DISTRIBUTIONS):
-        dist_data = summary[summary['distribution'] == dist]
-        if len(dist_data) == 0:
-            continue
+        print(f"  ✅ build_time.png")
         
-        x_pos = np.arange(len(dist_data)) + i * 0.25
-        plt.bar(x_pos, dist_data['build_ms'],
-               width=0.25, label=dist.capitalize(),
-               alpha=0.8)
-    
-    plt.xlabel('Index Configuration')
-    plt.ylabel('Build Time (ms)')
-    plt.title(f'Index Build Time Comparison ({size_str} keys)')
-    plt.legend()
-    plt.xticks(np.arange(len(dist_data)) + 0.25, 
-               [f"{row['model']}" for _, row in dist_data.iterrows()], 
-               rotation=45, ha='right')
-    plt.grid(axis='y', alpha=0.3)
-    plt.tight_layout()
-    
-    filename = os.path.join(size_graphs_dir, f'build_time.png')
-    plt.savefig(filename, dpi=150, bbox_inches='tight')
-    plt.close()
-    print(f"  Saved: {filename}")
-    
-    # === COMBINED COMPARISON ===
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-    
-    for idx, dist in enumerate(DISTRIBUTIONS):
-        dist_data = summary[summary['distribution'] == dist]
-        if len(dist_data) == 0:
-            continue
+        # === 4. COMBINED COMPARISON (ALL DISTRIBUTIONS) ===
+        fig, axes = plt.subplots(1, 3, figsize=(18, 5))
         
-        ax = axes[idx]
-        x_pos = np.arange(len(dist_data))
+        for idx, dist in enumerate(DISTRIBUTIONS):
+            dist_data = summary[summary['distribution'] == dist]
+            if len(dist_data) == 0:
+                continue
+            
+            ax = axes[idx]
+            x_pos = np.arange(len(dist_data))
+            
+            ax.bar(x_pos, dist_data['lookup_us'],
+                  color=[colors.get(m, '#7F8C8D') for m in dist_data['model']])
+            
+            ax.set_xlabel('Index', fontsize=10)
+            ax.set_ylabel('Lookup Time (µs)', fontsize=10)
+            ax.set_title(f'{dist.capitalize()}', fontsize=12, fontweight='bold')
+            ax.set_xticks(x_pos)
+            ax.set_xticklabels([row['model'] for _, row in dist_data.iterrows()], 
+                               rotation=45, ha='right', fontsize=9)
+            ax.grid(axis='y', alpha=0.3)
         
-        ax.bar(x_pos, dist_data['lookup_us'],
-              color=[colors.get(m, '#7F8C8D') for m in dist_data['model']])
+        fig.suptitle(f'Lookup Performance Comparison ({size_str} keys)', 
+                    fontsize=16, fontweight='bold')
+        plt.tight_layout()
         
-        ax.set_xlabel('Index', fontsize=10)
-        ax.set_ylabel('Lookup Time (µs)', fontsize=10)
-        ax.set_title(f'{dist.capitalize()}', fontsize=12, fontweight='bold')
-        ax.set_xticks(x_pos)
-        ax.set_xticklabels([row['model'] for _, row in dist_data.iterrows()], 
-                           rotation=45, ha='right', fontsize=9)
-        ax.grid(axis='y', alpha=0.3)
+        filename = os.path.join(size_graphs_dir, f'comparison_all.png')
+        plt.savefig(filename, dpi=150, bbox_inches='tight')
+        plt.close()
+        print(f"  ✅ comparison_all.png")
+        
+        print()
     
-    fig.suptitle(f'Lookup Performance Comparison ({size_str} keys)', 
-                fontsize=16, fontweight='bold')
-    plt.tight_layout()
-    
-    filename = os.path.join(size_graphs_dir, f'comparison_all.png')
-    plt.savefig(filename, dpi=150, bbox_inches='tight')
-    plt.close()
-    print(f"  Saved: {filename}")
-    
-    print(f"\nGraphs saved to {size_graphs_dir}/")
+    print_header("GENERATING GRAPHS FROM BENCHMARK DATA")
+    print("ALL PLOTS GENERATED!")
+    print_header("GENERATING GRAPHS FROM BENCHMARK DATA")
+    print(f"\nGraphs saved to: {GRAPHS_DIR}/")
+    print("\nFolder structure:")
+    for folder in sorted(os.listdir(GRAPHS_DIR)):
+        folder_path = os.path.join(GRAPHS_DIR, folder)
+        if os.path.isdir(folder_path):
+            files = [f for f in os.listdir(folder_path) if f.endswith('.png')]
+            print(f"\n  {folder}/ ({len(files)} graphs)")
+            for f in sorted(files):
+                print(f"    - {f}")
 
-
-def run_exploratory():
-    """Run exploratory visualization plots."""
-    print_header("GENERATING EXPLORATORY PLOTS")
-    print("(Visualizations using test data)")
-    print()
-    
-    import subprocess
-    
-    plot_scripts = [
-        'src/plots/learned_index_plot.py',
-        'src/plots/linear_index_adaptive_plot.py',
-        # 'src/plots/rmi_plot.py',  # Uncomment if you want RMI plots
-    ]
-    
-    for script in plot_scripts:
-        if os.path.exists(script):
-            print(f"Running {script}...")
-            try:
-                result = subprocess.run(
-                    [sys.executable, script],
-                    capture_output=True,
-                    text=True,
-                    timeout=60
-                )
-                if result.returncode == 0:
-                    print(f"  ✅ {script} completed")
-                else:
-                    print(f"  ⚠️ {script} had errors:")
-                    if result.stderr:
-                        print(f"    {result.stderr[:200]}")
-            except subprocess.TimeoutExpired:
-                print(f"  ⚠️ {script} timed out")
-            except Exception as e:
-                print(f"  ⚠️ {script} failed: {e}")
-        else:
-            print(f"  ⚠️ {script} not found")
-    
-    print()
-    print(f"Exploratory plots saved to {GRAPHS_DIR}/")
 
 
 def main():
@@ -644,23 +642,12 @@ def main():
             import traceback
             traceback.print_exc()
     
-    # Exploratory plots
-    if RUN_EXPLORATORY_PLOTS:
-        try:
-            run_exploratory()
-        except Exception as e:
-            print(f"\n\nExploratory plots ERROR: {e}")
-            import traceback
-            traceback.print_exc()
-    
     print_header("COMPLETE!")
     print(f"Finished: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     if master_csv:
         print(f"\nYour results: {os.path.dirname(master_csv)}/")
     if RUN_GRAPHS:
         print(f"Your graphs: {GRAPHS_DIR}/")
-    if RUN_EXPLORATORY_PLOTS:
-        print(f"Your exploratory plots: {GRAPHS_DIR}/")
 
 
 if __name__ == "__main__":
