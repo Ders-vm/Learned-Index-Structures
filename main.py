@@ -16,7 +16,7 @@ RUN_EXPLORATORY_PLOTS = False # Generate exploratory plots (uses test data, not 
 # Benchmark settings
 DATASET_SIZES = [10_000, 100_000, 1_000_000, 10_000_000, 100_000_000]              # Number of keys to test [100_000, 1_000_000, 100_000_000]
 DISTRIBUTIONS = ["seq", "uniform", "mixed"]  # Data patterns
-REPEAT_CYCLES = 5                        # Times to repeat (higher = better statistics)
+REPEAT_CYCLES =  10                       # Times to repeat (higher = better statistics)
 
 # ACCURACY VALIDATION (Critical!)
 VALIDATE_ACCURACY = True       # Check if searches return correct results
