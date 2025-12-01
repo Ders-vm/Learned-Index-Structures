@@ -11,12 +11,12 @@ Run everything from here - easy configuration at the top
 RUN_BENCHMARK = True          # Run the main benchmark
 RUN_ANALYSIS = True           # Generate statistical analysis  
 RUN_GRAPHS = True             # Generate performance graphs from benchmark data
-RUN_EXPLORATORY_PLOTS = False # Generate exploratory plots (uses test data, not benchmark results)
+RUN_EXPLORATORY_PLOTS = True # Generate exploratory plots (uses test data, not benchmark results)
 
 # Benchmark settings
-DATASET_SIZES = [10_000, 100_000, 1_000_000, 10_000_000, 100_000_000]              # Number of keys to test [100_000, 1_000_000, 100_000_000]
+DATASET_SIZES = [5_000]              # Number of keys to test [100_000, 1_000_000, 100_000_000]
 DISTRIBUTIONS = ["seq", "uniform", "mixed"]  # Data patterns
-REPEAT_CYCLES =  10                       # Times to repeat (higher = better statistics)
+REPEAT_CYCLES =  1                      # Times to repeat (higher = better statistics)
 
 # ACCURACY VALIDATION (Critical!)
 VALIDATE_ACCURACY = True       # Check if searches return correct results
