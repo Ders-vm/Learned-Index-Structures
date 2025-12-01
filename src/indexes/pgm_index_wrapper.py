@@ -5,13 +5,7 @@ PURE-PYTHON PGM INDEX (Simplified)
 This implementation mimics the behavior of the official PGM-Index but avoids all
 native C++ dependencies so it runs on all platforms including Windows.
 
-This version:
-
-    [DONE] Builds a piecewise-linear index
-    [DONE] Uses lower envelopes to minimize number of segments
-    [DONE] Guarantees a maximum absolute error (epsilon)
-    [DONE] Performs local binary search within that bound
-    [DONE] Integrates with your benchmark runner
+    
 
 It is optimized for readability and correctness, not SIGMOD-level performance.
 ===============================================================================
